@@ -1,15 +1,119 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0d0d0d;
-  --foreground: #f0f0f0;
+  --background: #070b14;
+  --bg-2: #0c1220;
+  --foreground: #eef0f4;
   --accent: #c9a84c;
-  --muted: #2a2a2a;
-  --border: #333333;
+  --accent-dim: rgba(201, 168, 76, 0.15);
+  --blue: #3b82f6;
+  --blue-dim: rgba(59, 130, 246, 0.12);
+  --muted: rgba(12, 18, 35, 0.7);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-bright: rgba(255, 255, 255, 0.11);
+  --text-muted: #6b7280;
+  --text-faint: #374151;
 }
+
+/* ── Reset & base ─────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist, system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
 }
+
+/* ── Ambient background glows ────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 75% 55% at 12% 10%,  rgba(37, 58, 130, 0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 88% 85%,  rgba(100, 60, 8,  0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 35% 30% at 75% 15%,  rgba(59, 130, 246, 0.05) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body > * { position: relative; z-index: 1; }
+
+/* ── Glass & border utilities ────────────────── */
+.glass {
+  background: rgba(12, 18, 35, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* gradient border via padding-box / border-box trick */
+.grad-border {
+  background:
+    linear-gradient(rgba(12, 18, 35, 0.72), rgba(12, 18, 35, 0.72)) padding-box,
+    linear-gradient(135deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.07) 100%) border-box;
+  border: 1px solid transparent;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.grad-border-gold {
+  background:
+    linear-gradient(rgba(14, 11, 4, 0.8), rgba(14, 11, 4, 0.8)) padding-box,
+    linear-gradient(135deg, rgba(201,168,76,0.55) 0%, rgba(201,168,76,0.12) 50%, rgba(201,168,76,0.35) 100%) border-box;
+  border: 1px solid transparent;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.grad-border-blue {
+  background:
+    linear-gradient(rgba(4, 10, 22, 0.8), rgba(4, 10, 22, 0.8)) padding-box,
+    linear-gradient(135deg, rgba(59,130,246,0.45) 0%, rgba(59,130,246,0.08) 50%, rgba(59,130,246,0.25) 100%) border-box;
+  border: 1px solid transparent;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* ── Sport typography ────────────────────────── */
+.sport {
+  font-family: var(--font-barlow, "Barlow Condensed", "Arial Narrow", sans-serif);
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* ── Pulse dot animation ─────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+/* ── Card hover (CSS, used in server components) */
+.card-lift {
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.22s ease;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+}
+
+/* ── Table row hover ─────────────────────────── */
+.table-row {
+  transition: background 0.15s ease;
+}
+.table-row:hover {
+  background: rgba(255,255,255,0.03) !important;
+}
+
+/* ── Custom scrollbar ────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
