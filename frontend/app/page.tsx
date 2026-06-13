@@ -1,5 +1,24 @@
 import Link from "next/link";
 
+interface Prediction {
+  HOME_WIN: number;
+  DRAW: number;
+  AWAY_WIN: number;
+  home_elo: number;
+  away_elo: number;
+}
+
+interface Fixture {
+  match_number: number;
+  date: string;
+  location: string;
+  home_team: string;
+  away_team: string;
+  group: string;
+  result: string | null;
+  prediction: Prediction;
+}
+
 const statCards = [
   { label: "Teams", value: "48" },
   { label: "Group Matches", value: "104" },
@@ -7,7 +26,16 @@ const statCards = [
   { label: "Kickoff", value: "Jun 11" },
 ];
 
-export default function Home() {
+export default async function Home() {
+  let upcomingMatches: Fixture[] = [];
+  try {
+    const res = await fetch("http://localhost:8000/fixtures", { cache: "no-store" });
+    const fixtures: Fixture[] = await res.json();
+    upcomingMatches = fixtures.filter((f) => f.result === null).slice(0, 3);
+  } catch {
+    // backend not reachable — show empty state
+  }
+
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}
@@ -43,19 +71,41 @@ export default function Home() {
             <span className="text-xs" style={{ color: "var(--accent)" }}>View all →</span>
           </div>
           <p className="text-sm" style={{ color: "#666" }}>
-            Next fixtures with win/draw/loss probabilities and expected goals.
+            Next fixtures with win/draw/loss probabilities via Elo ratings.
           </p>
           <div className="mt-auto flex flex-col gap-2">
-            {[
-              { home: "Mexico", away: "South Africa", date: "Jun 11" },
-              { home: "USA", away: "Canada", date: "Jun 12" },
-              { home: "Argentina", away: "Peru", date: "Jun 14" },
-            ].map((m) => (
-              <div key={m.home} className="flex items-center justify-between rounded-lg px-4 py-3 text-sm" style={{ background: "#1a1a1a", border: "1px solid var(--border)" }}>
-                <span className="font-medium">{m.home} <span style={{ color: "#555" }}>vs</span> {m.away}</span>
-                <span style={{ color: "#555" }}>{m.date}</span>
+            {upcomingMatches.length === 0 ? (
+              <div className="rounded-lg px-4 py-3 text-sm" style={{ background: "#1a1a1a", border: "1px solid var(--border)", color: "#555" }}>
+                No upcoming matches
               </div>
-            ))}
+            ) : (
+              upcomingMatches.map((m) => {
+                const [datePart, timePart] = m.date.split(" ");
+                const [dd, mm] = datePart.split("/");
+                const dateLabel = new Date(`2026-${mm}-${dd}`).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                const homePct = Math.round(m.prediction.HOME_WIN * 100);
+                const awayPct = Math.round(m.prediction.AWAY_WIN * 100);
+                const drawPct = Math.round(m.prediction.DRAW * 100);
+                return (
+                  <div key={m.match_number} className="rounded-lg px-4 py-3 text-sm flex flex-col gap-2" style={{ background: "#1a1a1a", border: "1px solid var(--border)" }}>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{m.home_team} <span style={{ color: "#555" }}>vs</span> {m.away_team}</span>
+                      <span style={{ color: "#555" }}>{dateLabel} · {timePart}</span>
+                    </div>
+                    <div className="flex gap-1 h-1 rounded-full overflow-hidden">
+                      <div style={{ width: `${homePct}%`, background: "var(--accent)" }} />
+                      <div style={{ width: `${drawPct}%`, background: "#444" }} />
+                      <div style={{ width: `${awayPct}%`, background: "#4c7bc9" }} />
+                    </div>
+                    <div className="flex justify-between text-xs" style={{ color: "#555" }}>
+                      <span>{homePct}%</span>
+                      <span>{drawPct}% draw</span>
+                      <span>{awayPct}%</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </Link>
 

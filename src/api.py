@@ -1,9 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
+from pydantic import BaseModel
 import pandas as pd
 from predict import predicting
 from config import name_map
+from elo import register_result
 
 BASE_DIR = Path(__file__).parent.parent
 
@@ -53,3 +55,19 @@ def get_fixtures():
         })
 
     return results
+
+
+class ResultInput(BaseModel):
+    match_number: int
+    home_score: int
+    away_score: int
+
+
+@app.post("/result")
+def post_result(body: ResultInput):
+    try:
+        return register_result(body.match_number, body.home_score, body.away_score)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
