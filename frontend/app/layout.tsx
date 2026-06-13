@@ -1,40 +1,64 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Barlow_Condensed } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 
-const geist = Geist({ subsets: ["latin"] });
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
+
+const barlowCondensed = Barlow_Condensed({
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  style: ["normal", "italic"],
+  variable: "--font-barlow",
+});
 
 export const metadata: Metadata = {
   title: "WC 2026 Predictor",
   description: "World Cup 2026 match predictions powered by Elo ratings",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const navLinks = [
+  { href: "/upcoming",  label: "Upcoming" },
+  { href: "/archive",   label: "Archive"  },
+  { href: "/predictor", label: "Rankings" },
+];
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={geist.className}>
-      <body className="min-h-screen flex flex-col" style={{ background: "var(--background)", color: "var(--foreground)" }}>
-        <nav style={{ borderBottom: "1px solid var(--border)", background: "var(--background)" }} className="px-8 py-4 flex items-center justify-between sticky top-0 z-50">
-          <Link href="/" style={{ color: "var(--accent)" }} className="text-xl font-bold tracking-tight">
-            WC 2026
+    <html lang="en" className={`${geist.variable} ${barlowCondensed.variable} ${geist.className}`}>
+      <body className="min-h-screen flex flex-col">
+        {/* ── Nav ─────────────────────────────────── */}
+        <nav
+          className="glass sticky top-0 z-50 px-8 py-4 flex items-center justify-between"
+          style={{ borderBottom: "1px solid var(--border)" }}
+        >
+          <Link href="/" className="flex items-center gap-1.5 select-none">
+            <span className="sport text-2xl" style={{ color: "var(--accent)" }}>WC</span>
+            <span className="sport text-2xl" style={{ color: "var(--foreground)" }}>2026</span>
+            <span
+              className="ml-2 text-xs font-semibold tracking-widest uppercase hidden sm:block"
+              style={{ color: "var(--text-muted)", letterSpacing: "0.18em" }}
+            >
+              Predictor
+            </span>
           </Link>
-          <div className="flex gap-8 text-sm font-medium">
-            <Link href="/upcoming" className="hover:opacity-70 transition-opacity" style={{ color: "var(--foreground)" }}>
-              Upcoming
-            </Link>
-            <Link href="/archive" className="hover:opacity-70 transition-opacity" style={{ color: "var(--foreground)" }}>
-              Archive
-            </Link>
-            <Link href="/predictor" className="hover:opacity-70 transition-opacity" style={{ color: "var(--foreground)" }}>
-              Tournament
-            </Link>
+
+          <div className="flex items-center gap-1">
+            {navLinks.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="px-4 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150"
+                style={{ color: "var(--text-muted)" }}
+              >
+                {label}
+              </Link>
+            ))}
           </div>
         </nav>
-        <main className="flex-1 px-8 py-10 max-w-5xl mx-auto w-full">
+
+        {/* ── Page content ─────────────────────────── */}
+        <main className="flex-1 px-8 py-10 max-w-7xl mx-auto w-full">
           {children}
         </main>
       </body>
