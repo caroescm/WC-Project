@@ -1,0 +1,9 @@
+K_FACTORS = {
+    "WORLD_CUP": 60,
+    "CONTINENTAL_CUP": 53,
+    "NATIONS_LEAGUE": 33,
+    "QUALIFICATION": 30,
+    "OLYMPICS": 23,
+    "OTHER": 20,
+    "FRIENDLY": 12
+}
