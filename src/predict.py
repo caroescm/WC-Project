@@ -12,11 +12,21 @@ def predicting (home_team:str, away_team:str, neutral:bool):
 
     elo_diff = home_elo - away_elo
 
-    model = joblib.load(BASE_DIR / 'models/model.pkl')
+    model_result = joblib.load(BASE_DIR / 'models/model.pkl')
     scaler = joblib.load(BASE_DIR / 'models/scaler.pkl')
+
+    model_home = joblib.load(BASE_DIR / 'models/model_home.pkl')
+    model_away = joblib.load(BASE_DIR / 'models/model_away.pkl')
 
     features = np.array([[elo_diff, neutral, 60]])
     features_scaled = scaler.transform(features)
 
-    probs = model.predict_proba(features_scaled)[0]
-    return dict(zip(model.classes_, probs))
+    expected_home = model_home.predict(features)[0]
+    expected_away = model_away.predict(features)[0]
+
+    probs = model_result.predict_proba(features_scaled)[0]
+    return {
+        **dict(zip(model_result.classes_, probs)),
+        "expected_home_goals": round(expected_home, 2),
+        "expected_away_goals": round(expected_away, 2)
+    }
