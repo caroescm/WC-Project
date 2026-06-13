@@ -1,65 +1,83 @@
-import Image from "next/image";
+import Link from "next/link";
+
+const statCards = [
+  { label: "Teams", value: "48" },
+  { label: "Group Matches", value: "104" },
+  { label: "Host Countries", value: "3" },
+  { label: "Kickoff", value: "Jun 11" },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="flex flex-col gap-8">
+      {/* Header */}
+      <div className="flex items-end justify-between">
+        <div>
+          <p className="text-xs font-semibold tracking-widest uppercase mb-1" style={{ color: "var(--accent)" }}>
+            FIFA World Cup 2026
           </p>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <span className="text-sm px-3 py-1 rounded-full font-medium" style={{ background: "#1a2e1a", color: "#4caf50" }}>
+          ● Live Predictions
+        </span>
+      </div>
+
+      {/* Stat Row */}
+      <div className="grid grid-cols-4 gap-4">
+        {statCards.map((s) => (
+          <div key={s.label} className="rounded-xl p-5 flex flex-col gap-1" style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
+            <span className="text-xs uppercase tracking-wider" style={{ color: "#666" }}>{s.label}</span>
+            <span className="text-2xl font-bold" style={{ color: "var(--accent)" }}>{s.value}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Main Grid */}
+      <div className="grid grid-cols-3 gap-4">
+
+        {/* Upcoming - wide */}
+        <Link href="/upcoming" className="col-span-2 rounded-xl p-6 flex flex-col gap-3" style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold">Upcoming Matches</h2>
+            <span className="text-xs" style={{ color: "var(--accent)" }}>View all →</span>
+          </div>
+          <p className="text-sm" style={{ color: "#666" }}>
+            Next fixtures with win/draw/loss probabilities and expected goals.
+          </p>
+          <div className="mt-auto flex flex-col gap-2">
+            {[
+              { home: "Mexico", away: "South Africa", date: "Jun 11" },
+              { home: "USA", away: "Canada", date: "Jun 12" },
+              { home: "Argentina", away: "Peru", date: "Jun 14" },
+            ].map((m) => (
+              <div key={m.home} className="flex items-center justify-between rounded-lg px-4 py-3 text-sm" style={{ background: "#1a1a1a", border: "1px solid var(--border)" }}>
+                <span className="font-medium">{m.home} <span style={{ color: "#555" }}>vs</span> {m.away}</span>
+                <span style={{ color: "#555" }}>{m.date}</span>
+              </div>
+            ))}
+          </div>
+        </Link>
+
+        {/* Right column */}
+        <div className="flex flex-col gap-4">
+          <Link href="/predictor" className="rounded-xl p-6 flex flex-col gap-2" style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
+            <span className="text-2xl">🏆</span>
+            <h2 className="font-semibold">Tournament Predictor</h2>
+            <p className="text-sm" style={{ color: "#666" }}>
+              Who wins the cup? Static + live simulation.
+            </p>
+          </Link>
+
+          <Link href="/archive" className="rounded-xl p-6 flex flex-col gap-2" style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
+            <span className="text-2xl">📋</span>
+            <h2 className="font-semibold">Archive</h2>
+            <p className="text-sm" style={{ color: "#666" }}>
+              Prediction accuracy vs real results.
+            </p>
+          </Link>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
