@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import pandas as pd
 from predict import predicting
 from config import name_map
-from elo import register_result
+from elo import register_result, sync_elos_from_fixtures
 
 BASE_DIR = Path(__file__).parent.parent
 
@@ -25,6 +25,7 @@ def predict(home_team: str, away_team: str, neutral: bool = False):
 
 @app.get("/fixtures")
 def get_fixtures():
+    sync_elos_from_fixtures()
     fixtures = pd.read_csv(BASE_DIR / "data/raw/wc2026_fixtures.csv")
 
     results = []
