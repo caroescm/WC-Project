@@ -3,9 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from pydantic import BaseModel
 import pandas as pd
-from predict import predicting
-from config import name_map
-from elo import register_result, sync_elos_from_fixtures
+from .predict import predicting
+from .config import name_map
+from .elo import register_result, sync_elos_from_fixtures
 
 BASE_DIR = Path(__file__).parent.parent
 
