@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from config import K_FACTORS, name_map
+from .config import K_FACTORS, name_map
 
 BASE_DIR = Path(__file__).parent.parent
 HOME_ADVANTAGE = 100
