@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AnimatedBar } from "../_components/AnimatedBar";
+import { parseMatchDateUTC } from "../_components/dateUtils";
 
 interface Prediction {
   HOME_WIN: number;
@@ -74,8 +75,9 @@ function isUpsetAlert(f: Fixture): boolean {
 
 // ── Date helpers ──────────────────────────────────
 function formatDateHeader(ddmmyyyy: string) {
+  // Use noon UTC to avoid date-shift when converting to local timezone
   const [dd, mm, yyyy] = ddmmyyyy.split("/");
-  return new Date(`${yyyy}-${mm}-${dd}`).toLocaleDateString("en-US", {
+  return new Date(Date.UTC(+yyyy, +mm - 1, +dd, 12)).toLocaleDateString([], {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -190,7 +192,7 @@ function GroupStandings({
 }
 
 function MatchCard({ fixture }: { fixture: Fixture }) {
-  const [, timePart] = fixture.date.split(" ");
+  const timePart = parseMatchDateUTC(fixture.date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const upset = isUpsetAlert(fixture);
 
   return (

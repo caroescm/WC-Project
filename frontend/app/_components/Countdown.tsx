@@ -1,19 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-function parseMatchDate(dateStr: string): Date {
-  const [datePart, timePart] = dateStr.split(" ");
-  const [dd, mm, yyyy] = datePart.split("/");
-  const [hh, min] = timePart.split(":");
-  return new Date(
-    parseInt(yyyy),
-    parseInt(mm) - 1,
-    parseInt(dd),
-    parseInt(hh),
-    parseInt(min)
-  );
-}
+import { parseMatchDateUTC } from "./dateUtils";
 
 function getTimeLeft(target: Date): string {
   const diff = target.getTime() - Date.now();
@@ -38,7 +26,7 @@ export function Countdown({ nextDate, homeTeam, awayTeam, group }: CountdownProp
   const [timeLeft, setTimeLeft] = useState("");
 
   useEffect(() => {
-    const target = parseMatchDate(nextDate);
+    const target = parseMatchDateUTC(nextDate);
     const tick = () => setTimeLeft(getTimeLeft(target));
     tick();
     const id = setInterval(tick, 1000);

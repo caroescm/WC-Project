@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { AnimatedBar } from "./AnimatedBar";
+import { localTime, parseMatchDateUTC } from "./dateUtils";
 
 interface Match {
   match_number: number;
@@ -31,12 +32,9 @@ export function DashboardMatches({ matches }: { matches: Match[] }) {
   return (
     <div className="flex flex-col gap-2">
       {matches.filter((m) => m.prediction !== null).map((m, i) => {
-        const [datePart, timePart] = m.date.split(" ");
-        const [dd, mm] = datePart.split("/");
-        const dateLabel = new Date(`2026-${mm}-${dd}`).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        });
+        const matchDate = parseMatchDateUTC(m.date);
+        const dateLabel = matchDate.toLocaleDateString([], { month: "short", day: "numeric" });
+        const timeLabel = matchDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
         return (
           <motion.div
@@ -59,7 +57,7 @@ export function DashboardMatches({ matches }: { matches: Match[] }) {
                 {m.group}
               </span>
               <span className="text-xs" style={{ color: "var(--text-faint)" }}>
-                {dateLabel} · {timePart}
+                {dateLabel} · {timeLabel}
               </span>
             </div>
 
