@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import PoissonRegressor
 from sklearn.metrics import mean_absolute_error
+from sklearn.preprocessing import StandardScaler
 import joblib
 from pathlib import Path
 
@@ -10,6 +11,7 @@ N = 10
 
 matches = pd.read_csv(BASE_DIR / 'data/processed/matches_clean.csv', parse_dates=['date'])
 matches = matches.dropna(subset=['home_score', 'away_score']).sort_values('date').reset_index(drop=True)
+matches = matches[matches['date'] >= '2000-01-01'].reset_index(drop=True)
 
 # Build a team-match view (one row per team per match)
 home_view = matches[['date','home_team','home_score','away_score']].copy()
@@ -51,19 +53,26 @@ feature_cols = ['home_attack','home_defense','away_attack','away_defense','elo_d
 train = matches2[matches2['date'] < '2020-01-01']
 test  = matches2[matches2['date'] >= '2020-01-01']
 
-model_home = PoissonRegressor(max_iter=300)
-model_home.fit(train[feature_cols], train['home_score'])
+scaler = StandardScaler()
+X_train = scaler.fit_transform(train[feature_cols])
+X_test  = scaler.transform(test[feature_cols])
 
-model_away = PoissonRegressor(max_iter=300)
-model_away.fit(train[feature_cols], train['away_score'])
+model_home = PoissonRegressor(alpha=0, max_iter=300)
+model_home.fit(X_train, train['home_score'])
 
-mae_home = mean_absolute_error(test['home_score'], model_home.predict(test[feature_cols]))
-mae_away = mean_absolute_error(test['away_score'], model_away.predict(test[feature_cols]))
+model_away = PoissonRegressor(alpha=0, max_iter=300)
+model_away.fit(X_train, train['away_score'])
+
+mae_home = mean_absolute_error(test['home_score'], model_home.predict(X_test))
+mae_away = mean_absolute_error(test['away_score'], model_away.predict(X_test))
 print(f"MAE home: {mae_home:.4f}")
 print(f"MAE away: {mae_away:.4f}")
+print(f"\nmodel_home coefs: {model_home.coef_}  intercept: {model_home.intercept_:.6f}")
+print(f"model_away coefs: {model_away.coef_}  intercept: {model_away.intercept_:.6f}")
 
 joblib.dump(model_home, BASE_DIR / 'models/model_home.pkl')
 joblib.dump(model_away, BASE_DIR / 'models/model_away.pkl')
+joblib.dump(scaler,     BASE_DIR / 'models/scaler.pkl')
 
 # Save team stats for use in predict.py
 team_stats.to_csv(BASE_DIR / 'data/processed/team_rolling_stats.csv', index=False)
