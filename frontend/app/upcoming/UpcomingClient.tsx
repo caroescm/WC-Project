@@ -44,7 +44,7 @@ function computeStandings(allFixtures: Fixture[], group: string) {
         pts.set(f.home_team, pts.get(f.home_team)! + 1);
         pts.set(f.away_team, pts.get(f.away_team)! + 1);
       }
-    } else {
+    } else if (f.prediction !== null) {
       // Expected value from prediction
       pts.set(
         f.home_team,
@@ -64,9 +64,10 @@ function computeStandings(allFixtures: Fixture[], group: string) {
 
 // ── Upset detection ───────────────────────────────
 function isUpsetAlert(f: Fixture): boolean {
+  if (!f.prediction) return false;
   const { home_elo, away_elo, HOME_WIN, AWAY_WIN } = f.prediction;
   const diff = Math.abs(home_elo - away_elo);
-  if (diff < 80) return false; // competitive — not a true upset scenario
+  if (diff < 80) return false;
   const underdogWin = home_elo > away_elo ? AWAY_WIN : HOME_WIN;
   return underdogWin >= 0.28;
 }
@@ -247,19 +248,21 @@ function MatchCard({ fixture }: { fixture: Fixture }) {
       </div>
 
       {/* Probability bar */}
-      <AnimatedBar
-        homeWin={fixture.prediction.HOME_WIN}
-        draw={fixture.prediction.DRAW}
-        awayWin={fixture.prediction.AWAY_WIN}
-        homeTeam={fixture.home_team}
-        awayTeam={fixture.away_team}
-      />
-
-      {/* Elo */}
-      <div className="flex justify-between text-xs" style={{ color: "var(--text-faint)" }}>
-        <span>ELO {fixture.prediction.home_elo}</span>
-        <span>ELO {fixture.prediction.away_elo}</span>
-      </div>
+      {fixture.prediction && (
+        <>
+          <AnimatedBar
+            homeWin={fixture.prediction.HOME_WIN}
+            draw={fixture.prediction.DRAW}
+            awayWin={fixture.prediction.AWAY_WIN}
+            homeTeam={fixture.home_team}
+            awayTeam={fixture.away_team}
+          />
+          <div className="flex justify-between text-xs" style={{ color: "var(--text-faint)" }}>
+            <span>ELO {fixture.prediction.home_elo}</span>
+            <span>ELO {fixture.prediction.away_elo}</span>
+          </div>
+        </>
+      )}
     </div>
   );
 }

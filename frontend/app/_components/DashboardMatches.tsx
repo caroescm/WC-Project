@@ -30,7 +30,7 @@ export function DashboardMatches({ matches }: { matches: Match[] }) {
 
   return (
     <div className="flex flex-col gap-2">
-      {matches.map((m, i) => {
+      {matches.filter((m) => m.prediction !== null).map((m, i) => {
         const [datePart, timePart] = m.date.split(" ");
         const [dd, mm] = datePart.split("/");
         const dateLabel = new Date(`2026-${mm}-${dd}`).toLocaleDateString("en-US", {
