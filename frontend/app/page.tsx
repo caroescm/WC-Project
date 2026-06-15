@@ -44,7 +44,7 @@ const ArchiveIcon = () => (
 export default async function Home() {
   let upcomingMatches: Fixture[] = [];
   try {
-    const res = await fetch("http://localhost:8000/fixtures", { cache: "no-store" });
+    const res = await fetch("https://wc-project-production.up.railway.app/fixtures", { cache: "no-store" });
     const fixtures: Fixture[] = await res.json();
     upcomingMatches = fixtures.filter((f) => f.result === null).slice(0, 3);
   } catch {
