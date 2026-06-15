@@ -66,7 +66,7 @@ export default async function PredictorPage() {
           className="text-xs font-bold tracking-widest uppercase mb-2"
           style={{ color: "var(--accent)", letterSpacing: "0.2em" }}
         >
-          FIFA World Cup 2026
+          FootballOdds
         </p>
         <h1 className="sport text-6xl" style={{ color: "var(--foreground)" }}>
           Power Rankings

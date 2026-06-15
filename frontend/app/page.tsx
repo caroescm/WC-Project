@@ -63,7 +63,7 @@ export default async function Home() {
             className="text-xs font-bold tracking-widest uppercase mb-1.5"
             style={{ color: "var(--accent)", letterSpacing: "0.2em" }}
           >
-            FIFA World Cup 2026
+            FootballOdds
           </p>
           <h1 className="sport text-5xl" style={{ color: "var(--foreground)" }}>
             Dashboard

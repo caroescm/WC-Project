@@ -8,13 +8,12 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
   weight: ["600", "700", "800"],
-  style: ["normal", "italic"],
   variable: "--font-barlow",
 });
 
 export const metadata: Metadata = {
-  title: "WC 2026 Predictor",
-  description: "World Cup 2026 match predictions powered by Elo ratings",
+  title: "FootballOdds",
+  description: "FootballOdds — match predictions powered by Elo ratings",
 };
 
 const navLinks = [
@@ -33,14 +32,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           style={{ borderBottom: "1px solid var(--border)" }}
         >
           <Link href="/" className="flex items-center gap-1.5 select-none">
-            <span className="sport text-2xl" style={{ color: "var(--accent)" }}>WC</span>
-            <span className="sport text-2xl" style={{ color: "var(--foreground)" }}>2026</span>
-            <span
-              className="ml-2 text-xs font-semibold tracking-widest uppercase hidden sm:block"
-              style={{ color: "var(--text-muted)", letterSpacing: "0.18em" }}
-            >
-              Predictor
-            </span>
+            <span className="sport text-2xl" style={{ color: "var(--accent)" }}>Football</span>
+            <span className="sport text-2xl" style={{ color: "var(--foreground)" }}>Odds</span>
           </Link>
 
           <div className="flex items-center gap-1">
