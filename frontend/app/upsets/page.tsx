@@ -3,7 +3,7 @@ import Link from "next/link";
 interface Prediction { HOME_WIN: number; DRAW: number; AWAY_WIN: number; home_xg: number; away_xg: number; }
 interface Fixture { match_number: number; date: string; home_team: string; away_team: string; group: string; result: string | null; prediction: Prediction; }
 
-const BASE = "https://wc-project-production.up.railway.app";
+const BASE = process.env.API_URL ?? "https://wc-project-production.up.railway.app";
 const WIN_UPSET_THRESHOLD  = 0.40;
 const DRAW_UPSET_THRESHOLD = 0.25;
 

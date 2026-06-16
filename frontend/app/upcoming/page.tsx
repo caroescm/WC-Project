@@ -19,7 +19,7 @@ interface Fixture {
 }
 
 export default async function UpcomingPage() {
-  const res = await fetch("https://wc-project-production.up.railway.app/fixtures", { cache: "no-store" });
+  const res = await fetch(`${process.env.API_URL ?? "https://wc-project-production.up.railway.app"}/fixtures`, { cache: "no-store" });
   const fixtures: Fixture[] = await res.json();
 
   const upcomingCount = fixtures.filter((f) => f.result === null).length;

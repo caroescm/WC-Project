@@ -177,8 +177,8 @@ export default async function Home() {
   let simulation: Simulation = {};
   try {
     [fixtures, simulation] = await Promise.all([
-      fetch("https://wc-project-production.up.railway.app/fixtures", { cache:"no-store" }).then(r => r.json()),
-      fetch("https://wc-project-production.up.railway.app/simulate",  { next: { revalidate: 3600 } }).then(r => r.json()),
+      fetch(`${process.env.API_URL ?? "https://wc-project-production.up.railway.app"}/fixtures`, { cache:"no-store" }).then(r => r.json()),
+      fetch(`${process.env.API_URL ?? "https://wc-project-production.up.railway.app"}/simulate`,  { next: { revalidate: 3600 } }).then(r => r.json()),
     ]);
   } catch {}
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 type SimEntry = { r32:number; r16:number; qf:number; sf:number; final:number; winner:number };
 type Simulation = Record<string, SimEntry>;
 
-const BASE = "https://wc-project-production.up.railway.app";
+const BASE = process.env.API_URL ?? "https://wc-project-production.up.railway.app";
 
 export default async function MonteCarloPage() {
   let simulation: Simulation = {};

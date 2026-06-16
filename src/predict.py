@@ -40,12 +40,16 @@ def predicting(home_team: str, away_team: str, neutral: bool = True):
     away_attack, away_defense = _team_stats(away_team)
 
     feature_cols = ['home_attack', 'home_defense', 'away_attack', 'away_defense', 'elo_diff']
-    features = scaler.transform(
-        pd.DataFrame([[home_attack, home_defense, away_attack, away_defense, elo_diff]], columns=feature_cols)
-    )
+    feat_normal  = scaler.transform(pd.DataFrame([[home_attack, home_defense, away_attack, away_defense,  elo_diff]], columns=feature_cols))
+    feat_flipped = scaler.transform(pd.DataFrame([[away_attack, away_defense, home_attack, home_defense, -elo_diff]], columns=feature_cols))
 
-    lambda_home = float(model_home.predict(features)[0])
-    lambda_away = float(model_away.predict(features)[0])
+    if neutral:
+        # Average both orientations so neither side gets a home-field boost
+        lambda_home = (float(model_home.predict(feat_normal)[0]) + float(model_away.predict(feat_flipped)[0])) / 2
+        lambda_away = (float(model_away.predict(feat_normal)[0]) + float(model_home.predict(feat_flipped)[0])) / 2
+    else:
+        lambda_home = float(model_home.predict(feat_normal)[0])
+        lambda_away = float(model_away.predict(feat_normal)[0])
 
     goals = np.arange(11)
     prob_home = poisson.pmf(goals, lambda_home)

@@ -91,7 +91,7 @@ function ArchiveCard({ fixture }: { fixture: Fixture }) {
 }
 
 export default async function ArchivePage() {
-  const res = await fetch("https://wc-project-production.up.railway.app/fixtures", { cache: "no-store" });
+  const res = await fetch(`${process.env.API_URL ?? "https://wc-project-production.up.railway.app"}/fixtures`, { cache: "no-store" });
   const fixtures = await res.json() as Array<{ result: string | null } & Omit<Fixture, "result">>;
   const played = fixtures.filter((f) => f.result !== null && f.prediction !== null) as Fixture[];
   const correctCount = played.filter((f) => didPredictionMatch(f.result, f.prediction)).length;
