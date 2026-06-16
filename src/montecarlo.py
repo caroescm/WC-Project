@@ -2,8 +2,12 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-from config import name_map
-from predict import predicting
+try:
+    from config import name_map
+    from predict import predicting
+except ImportError:
+    from .config import name_map
+    from .predict import predicting
 
 BASE_DIR = Path(__file__).parent.parent
 
@@ -237,5 +241,5 @@ _cache = None
 def get_cached_simulation():
     global _cache
     if _cache is None:
-        _cache = simulate_tournament(n=10000)
+        _cache = simulate_tournament(n=3000)
     return _cache

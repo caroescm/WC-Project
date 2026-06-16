@@ -67,6 +67,12 @@ def get_fixtures():
     return results
 
 
+@app.get("/simulate")
+def simulate():
+    from .montecarlo import get_cached_simulation
+    return get_cached_simulation()
+
+
 class ResultInput(BaseModel):
     match_number: int
     home_score: int
