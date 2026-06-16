@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Barlow_Condensed } from "next/font/google";
-import Link from "next/link";
+import Sidebar from "./sidebar";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
@@ -16,42 +16,18 @@ export const metadata: Metadata = {
   description: "FootballOdds — match predictions powered by Elo ratings",
 };
 
-const navLinks = [
-  { href: "/upcoming",  label: "Upcoming" },
-  { href: "/archive",   label: "Archive"  },
-  { href: "/predictor", label: "Rankings" },
-];
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geist.variable} ${barlowCondensed.variable} ${geist.className}`}>
-      <body className="min-h-screen flex flex-col">
-        {/* ── Nav ─────────────────────────────────── */}
-        <nav
-          className="glass sticky top-0 z-50 px-8 py-4 flex items-center justify-between"
-          style={{ borderBottom: "1px solid var(--border)" }}
+      <body style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+        <Sidebar />
+        <main
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: "40px 32px",
+          }}
         >
-          <Link href="/" className="flex items-center gap-1.5 select-none">
-            <span className="sport text-2xl" style={{ color: "var(--accent)" }}>Football</span>
-            <span className="sport text-2xl" style={{ color: "var(--foreground)" }}>Odds</span>
-          </Link>
-
-          <div className="flex items-center gap-1">
-            {navLinks.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className="px-4 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150"
-                style={{ color: "var(--text-muted)" }}
-              >
-                {label}
-              </Link>
-            ))}
-          </div>
-        </nav>
-
-        {/* ── Page content ─────────────────────────── */}
-        <main className="flex-1 px-8 py-10 max-w-7xl mx-auto w-full">
           {children}
         </main>
       </body>
