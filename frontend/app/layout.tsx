@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Barlow_Condensed } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import Sidebar from "./sidebar";
 import "./globals.css";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
-
-const barlowCondensed = Barlow_Condensed({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  variable: "--font-barlow",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-dm",
 });
 
 export const metadata: Metadata = {
@@ -18,16 +16,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} ${barlowCondensed.variable} ${geist.className}`}>
+    <html lang="en" className={dmSans.variable}>
       <body style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
         <Sidebar />
-        <main
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: "40px 32px",
-          }}
-        >
+        <main className="flex-1 overflow-y-auto p-6 lg:p-8" style={{ background: "var(--bg-page)" }}>
           {children}
         </main>
       </body>

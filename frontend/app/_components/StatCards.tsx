@@ -5,8 +5,6 @@ import { motion } from "framer-motion";
 export interface StatCard {
   label: string;
   value: string;
-  /** true → gold gradient border + larger number */
-  highlight?: boolean;
 }
 
 const container = {
@@ -27,37 +25,23 @@ export function StatCards({ cards }: { cards: StatCard[] }) {
       animate="show"
       style={{
         display: "grid",
-        /* last card gets 1.35× width to break symmetry */
-        gridTemplateColumns: "1fr 1fr 1fr 1.35fr",
-        gap: "1rem",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gap: 12,
       }}
     >
       {cards.map((card) => (
         <motion.div
           key={card.label}
           variants={item}
-          className={card.highlight ? "grad-border-gold" : "grad-border"}
+          className="card"
           style={{
-            borderRadius: "1rem",
-            padding: card.highlight ? "1.4rem 1.25rem" : "1.25rem",
             display: "flex",
             flexDirection: "column",
-            gap: "0.35rem",
+            gap: 4,
           }}
         >
-          <span
-            className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: card.highlight ? "rgba(201,168,76,0.55)" : "var(--text-faint)" }}
-          >
-            {card.label}
-          </span>
-          <span
-            className="sport"
-            style={{
-              fontSize: card.highlight ? "2.6rem" : "2.1rem",
-              color: "var(--accent)",
-            }}
-          >
+          <span className="card-title">{card.label}</span>
+          <span className="sport" style={{ fontSize: "1.375rem", color: "var(--accent)" }}>
             {card.value}
           </span>
         </motion.div>

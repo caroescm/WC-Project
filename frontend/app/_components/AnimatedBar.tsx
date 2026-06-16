@@ -8,7 +8,6 @@ interface AnimatedBarProps {
   awayWin: number;
   homeTeam: string;
   awayTeam: string;
-  /** compact = solo la barra + números pequeños debajo (para el dashboard) */
   compact?: boolean;
 }
 
@@ -27,9 +26,9 @@ export function AnimatedBar({
   const dominant: "home" | "away" | "draw" =
     h >= a && h >= d ? "home" : a >= h && a >= d ? "away" : "draw";
 
-  const homeColor  = dominant === "home" ? "var(--accent)" : "rgba(201,168,76,0.35)";
-  const awayColor  = dominant === "away" ? "var(--blue)"   : "rgba(59,130,246,0.35)";
-  const drawColor  = "#374151";
+  const homeColor = dominant === "home" ? "var(--accent)" : "var(--text-faint)";
+  const awayColor = dominant === "away" ? "var(--accent)" : "var(--text-faint)";
+  const drawColor = "var(--border)";
 
   const gradient = `linear-gradient(to right,
     ${homeColor} 0% ${h}%,
@@ -38,7 +37,6 @@ export function AnimatedBar({
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      {/* ── Big percentages (full mode) ──────────── */}
       {!compact && (
         <div className="flex justify-between items-end mb-1">
           <div className="flex flex-col gap-0.5">
@@ -62,7 +60,7 @@ export function AnimatedBar({
             <span className="text-xs" style={{ color: "var(--text-muted)" }}>{awayTeam}</span>
             <span
               className="sport text-4xl"
-              style={{ color: dominant === "away" ? "var(--blue)" : "var(--text-faint)" }}
+              style={{ color: dominant === "away" ? "var(--accent)" : "var(--text-faint)" }}
             >
               {a}%
             </span>
@@ -70,12 +68,10 @@ export function AnimatedBar({
         </div>
       )}
 
-      {/* ── The bar ──────────────────────────────── */}
       <div
         className="relative w-full rounded-full overflow-hidden"
-        style={{ height: compact ? 6 : 8, background: "rgba(0,0,0,0.4)" }}
+        style={{ height: compact ? 6 : 8, background: "var(--border)" }}
       >
-        {/* Growing gradient bar */}
         <motion.div
           className="absolute inset-y-0 left-0 rounded-full"
           style={{ background: gradient }}
@@ -83,32 +79,15 @@ export function AnimatedBar({
           animate={{ width: "100%" }}
           transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
         />
-        {/* Shimmer overlay */}
-        <motion.div
-          className="absolute inset-0 rounded-full pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.18) 50%, transparent 100%)",
-          }}
-          animate={{ x: ["-110%", "210%"] }}
-          transition={{
-            duration: 2.2,
-            ease: "linear",
-            repeat: Infinity,
-            repeatDelay: 2.5,
-            delay: 1.1,
-          }}
-        />
       </div>
 
-      {/* ── Compact labels ───────────────────────── */}
       {compact && (
         <div className="flex justify-between text-xs">
           <span style={{ color: dominant === "home" ? "var(--accent)" : "var(--text-faint)" }}>
             {h}%
           </span>
           <span style={{ color: "var(--text-faint)" }}>{d}% draw</span>
-          <span style={{ color: dominant === "away" ? "var(--blue)" : "var(--text-faint)" }}>
+          <span style={{ color: dominant === "away" ? "var(--accent)" : "var(--text-faint)" }}>
             {a}%
           </span>
         </div>

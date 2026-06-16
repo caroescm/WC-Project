@@ -35,16 +35,16 @@ export function Countdown({ nextDate, homeTeam, awayTeam, group }: CountdownProp
 
   return (
     <div
-      className="flex items-center justify-between gap-4 rounded-xl px-4 py-2.5"
+      className="flex items-center justify-between gap-4 rounded-lg px-4 py-2.5"
       style={{
-        background: "rgba(201,168,76,0.05)",
-        border: "1px solid rgba(201,168,76,0.15)",
+        background: "var(--accent-light)",
+        border: "1px solid var(--accent-dim)",
       }}
     >
       <div className="flex flex-col gap-0.5 min-w-0">
         <span
-          className="text-xs font-bold uppercase tracking-widest"
-          style={{ color: "rgba(201,168,76,0.6)" }}
+          className="text-xs font-semibold"
+          style={{ color: "var(--accent)" }}
         >
           Next · {group}
         </span>

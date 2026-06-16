@@ -95,20 +95,20 @@ function GroupStandings({
 
   return (
     <div
-      className="rounded-xl overflow-hidden"
-      style={{ border: "1px solid rgba(255,255,255,0.05)" }}
+      className="rounded-lg overflow-hidden"
+      style={{ border: "1px solid var(--border)" }}
     >
       {/* Header */}
       <div
         className="px-4 py-2 flex items-center justify-between"
         style={{
-          background: "rgba(0,0,0,0.45)",
-          borderBottom: "1px solid rgba(255,255,255,0.04)",
+          background: "var(--bg-page)",
+          borderBottom: "1px solid var(--border)",
         }}
       >
         <span
-          className="text-xs font-bold uppercase tracking-widest"
-          style={{ color: "var(--text-faint)" }}
+          className="text-xs font-semibold"
+          style={{ color: "var(--text-muted)" }}
         >
           Projected Standings
         </span>
@@ -130,10 +130,8 @@ function GroupStandings({
             style={{
               borderBottom:
                 i < standings.length - 1
-                  ? "1px solid rgba(255,255,255,0.03)"
+                  ? "1px solid var(--border)"
                   : undefined,
-              background:
-                i % 2 === 0 ? "rgba(0,0,0,0.25)" : "rgba(0,0,0,0.12)",
             }}
           >
             {/* Rank */}
@@ -166,7 +164,7 @@ function GroupStandings({
             {/* Bar */}
             <div
               className="rounded-full overflow-hidden flex-shrink-0"
-              style={{ width: 72, height: 3, background: "rgba(0,0,0,0.5)" }}
+              style={{ width: 72, height: 4, background: "var(--bg-page)" }}
             >
               <div
                 className="h-full rounded-full"
@@ -197,30 +195,15 @@ function MatchCard({ fixture }: { fixture: Fixture }) {
 
   return (
     <div
-      className="rounded-2xl p-5 flex flex-col gap-4 grad-border card-lift"
+      className="card"
+      style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
-          <span
-            className="text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded-full"
-            style={{
-              background: "rgba(201,168,76,0.08)",
-              color: "var(--accent)",
-              border: "1px solid rgba(201,168,76,0.2)",
-            }}
-          >
-            {fixture.group}
-          </span>
+          <span className="badge badge-accent">{fixture.group}</span>
           {upset && (
-            <span
-              className="text-xs font-bold px-2 py-0.5 rounded-full"
-              style={{
-                background: "rgba(249,115,22,0.1)",
-                color: "#f97316",
-                border: "1px solid rgba(249,115,22,0.25)",
-              }}
-            >
+            <span className="badge" style={{ background:"rgba(249,115,22,0.1)", color:"#f97316" }}>
               Upset Alert
             </span>
           )}
@@ -236,8 +219,8 @@ function MatchCard({ fixture }: { fixture: Fixture }) {
           {fixture.home_team}
         </span>
         <div
-          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-          style={{ background: "rgba(255,255,255,0.04)", color: "var(--text-faint)" }}
+          className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold"
+          style={{ background: "var(--bg-page)", color: "var(--text-faint)" }}
         >
           vs
         </div>
@@ -291,12 +274,12 @@ export function UpcomingClient({ fixtures }: { fixtures: Fixture[] }) {
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setActiveGroup(null)}
-          className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-150"
-          style={{
-            background: activeGroup === null ? "var(--accent)" : "rgba(255,255,255,0.05)",
-            color: activeGroup === null ? "#0a0a0a" : "var(--text-muted)",
-            border: activeGroup === null ? "1px solid var(--accent)" : "1px solid var(--border)",
-          }}
+      className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150"
+      style={{
+        background: activeGroup === null ? "var(--accent)" : "var(--bg-page)",
+        color: activeGroup === null ? "#ffffff" : "var(--text-muted)",
+        border: activeGroup === null ? "1px solid var(--accent)" : "1px solid var(--border)",
+      }}
         >
           All
         </button>
@@ -306,10 +289,10 @@ export function UpcomingClient({ fixtures }: { fixtures: Fixture[] }) {
             <button
               key={g}
               onClick={() => setActiveGroup(active ? null : g)}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-150"
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150"
               style={{
-                background: active ? "var(--accent)" : "rgba(255,255,255,0.05)",
-                color: active ? "#0a0a0a" : "var(--text-muted)",
+                background: active ? "var(--accent)" : "var(--bg-page)",
+                color: active ? "#ffffff" : "var(--text-muted)",
                 border: active ? "1px solid var(--accent)" : "1px solid var(--border)",
               }}
             >
@@ -339,8 +322,8 @@ export function UpcomingClient({ fixtures }: { fixtures: Fixture[] }) {
               <h2 className="sport text-3xl" style={{ color: "var(--accent)" }}>
                 {group}
               </h2>
-              <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
-              <span className="text-xs font-semibold" style={{ color: "var(--text-faint)" }}>
+          <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+          <span className="text-xs" style={{ color: "var(--text-faint)" }}>
                 {groupUpcoming.length} match{groupUpcoming.length !== 1 ? "es" : ""} remaining
               </span>
             </div>
@@ -353,12 +336,12 @@ export function UpcomingClient({ fixtures }: { fixtures: Fixture[] }) {
               <div key={date} className="flex flex-col gap-3">
                 <div className="flex items-center gap-3">
                   <p
-                    className="text-xs font-bold uppercase tracking-widest whitespace-nowrap"
+                    className="text-xs font-bold whitespace-nowrap"
                     style={{ color: "var(--text-muted)" }}
                   >
                     {formatDateHeader(date)}
                   </p>
-                  <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.04)" }} />
+                  <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {matches.map((f) => (

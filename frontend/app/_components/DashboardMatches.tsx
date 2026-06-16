@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { AnimatedBar } from "./AnimatedBar";
-import { localTime, parseMatchDateUTC } from "./dateUtils";
+import { parseMatchDateUTC } from "./dateUtils";
 
 interface Match {
   match_number: number;
@@ -19,14 +19,7 @@ interface Match {
 
 export function DashboardMatches({ matches }: { matches: Match[] }) {
   if (matches.length === 0) {
-    return (
-      <div
-        className="rounded-xl px-4 py-3 text-sm"
-        style={{ background: "rgba(0,0,0,0.25)", color: "var(--text-muted)" }}
-      >
-        No upcoming matches found.
-      </div>
-    );
+    return <div className="empty">No upcoming matches found.</div>;
   }
 
   return (
@@ -42,45 +35,26 @@ export function DashboardMatches({ matches }: { matches: Match[] }) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 + 0.2, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="rounded-xl px-4 py-2.5 flex flex-col gap-1.5"
-            style={{
-              background: "rgba(4, 8, 18, 0.55)",
-              border: "1px solid rgba(255,255,255,0.05)",
-            }}
+            className="card"
+            style={{ padding:12, display:"flex", flexDirection:"column", gap:6 }}
           >
-            {/* Group + date */}
             <div className="flex items-center justify-between">
-              <span
-                className="text-xs font-bold tracking-widest uppercase"
-                style={{ color: "var(--accent)", opacity: 0.8 }}
-              >
-                {m.group}
-              </span>
-              <span className="text-xs" style={{ color: "var(--text-faint)" }}>
+              <span className="badge badge-accent">{m.group}</span>
+              <span className="text-xs" style={{ color:"var(--text-faint)" }}>
                 {dateLabel} · {timeLabel}
               </span>
             </div>
 
-            {/* Teams */}
             <div className="flex items-center gap-2">
-              <span className="sport text-base flex-1" style={{ color: "var(--foreground)" }}>
+              <span className="sport text-base flex-1" style={{ color:"var(--foreground)" }}>
                 {m.home_team}
               </span>
-              <span
-                className="text-xs px-1.5 py-0.5 rounded font-medium flex-shrink-0"
-                style={{ background: "rgba(255,255,255,0.04)", color: "var(--text-faint)" }}
-              >
-                vs
-              </span>
-              <span
-                className="sport text-base flex-1 text-right"
-                style={{ color: "var(--foreground)" }}
-              >
+              <span className="text-xs" style={{ color:"var(--text-faint)", flexShrink:0 }}>vs</span>
+              <span className="sport text-base flex-1 text-right" style={{ color:"var(--foreground)" }}>
                 {m.away_team}
               </span>
             </div>
 
-            {/* Bar */}
             <AnimatedBar
               homeWin={m.prediction.HOME_WIN}
               draw={m.prediction.DRAW}

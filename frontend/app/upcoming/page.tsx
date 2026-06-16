@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { UpcomingClient } from "./UpcomingClient";
 
 interface Fixture {
@@ -24,24 +25,14 @@ export default async function UpcomingPage() {
   const upcomingCount = fixtures.filter((f) => f.result === null).length;
 
   return (
-    <div className="flex flex-col gap-8">
-      {/* ── Header ────────────────────────────────── */}
+    <div style={{ display:"flex", flexDirection:"column", gap:20 }}>
+      <Link href="/" className="back-link">← Back</Link>
+
       <div>
-        <p
-          className="text-xs font-bold tracking-widest uppercase mb-2"
-          style={{ color: "var(--accent)", letterSpacing: "0.2em" }}
-        >
-          FootballOdds
-        </p>
-        <h1 className="sport text-6xl" style={{ color: "var(--foreground)" }}>
-          Upcoming
-        </h1>
-        <p className="text-sm mt-2" style={{ color: "var(--text-muted)" }}>
-          {upcomingCount} matches remaining · probabilities via Elo · upset alerts included
-        </p>
+        <h1 className="page-title">Upcoming</h1>
+        <p className="page-subtitle">{upcomingCount} matches remaining · probabilities via Elo · upset alerts included</p>
       </div>
 
-      {/* ── Interactive client section ─────────────── */}
       <UpcomingClient fixtures={fixtures} />
     </div>
   );
