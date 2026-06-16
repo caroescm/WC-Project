@@ -11,20 +11,14 @@ interface HeroCardProps {
   icon: ReactNode;
 }
 
-export function HeroCard({
-  href,
-  title,
-  description,
-  badge,
-  icon,
-}: HeroCardProps) {
+export function HeroCard({ href, title, description, badge, icon }: HeroCardProps) {
   return (
-    <Link href={href} className="block h-full">
-      <div className="card" style={{ display:"flex", flexDirection:"column", gap:10, minHeight:148 }}>
-        <span className="badge badge-accent" style={{ alignSelf:"flex-start" }}>{badge}</span>
+    <Link href={href} style={{ display: "block", height: "100%", textDecoration: "none" }}>
+      <div className="card" style={{ display: "flex", flexDirection: "column", gap: 10, minHeight: 148, height: "100%" }}>
+        <span className="badge badge-accent" style={{ alignSelf: "flex-start" }}>{badge}</span>
         <div>{icon}</div>
-        <h2 className="font-bold text-base tracking-tight mt-auto">{title}</h2>
-        <p className="text-sm leading-relaxed" style={{ color:"var(--text-muted)" }}>{description}</p>
+        <h2 style={{ fontWeight: 700, fontSize: "1rem", letterSpacing: "-0.02em", marginTop: "auto", color: "var(--foreground)" }}>{title}</h2>
+        <p style={{ fontSize: "0.875rem", lineHeight: 1.6, color: "var(--text-muted)" }}>{description}</p>
       </div>
     </Link>
   );

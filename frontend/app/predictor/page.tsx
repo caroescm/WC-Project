@@ -40,7 +40,7 @@ export default async function PredictorPage() {
         <p className="page-subtitle">{teams.length} teams ranked by Elo rating · pre-tournament snapshot</p>
       </div>
 
-      <div className="flex flex-wrap gap-1.5">
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {TIERS.map(t => (
           <span key={t.label} className="badge" style={{ background:t.bg, color:t.color, border:`1px solid ${t.border}` }}>{t.label}</span>
         ))}

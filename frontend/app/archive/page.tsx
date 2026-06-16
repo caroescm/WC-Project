@@ -22,11 +22,9 @@ interface Fixture {
 function didPredictionMatch(result: string, prediction: Prediction): boolean {
   const [hg, ag] = result.split("-").map((s) => parseInt(s.trim(), 10));
   const predicted =
-    prediction.HOME_WIN >= prediction.DRAW && prediction.HOME_WIN >= prediction.AWAY_WIN
-      ? "home"
-      : prediction.AWAY_WIN >= prediction.DRAW && prediction.AWAY_WIN >= prediction.HOME_WIN
-      ? "away"
-      : "draw";
+    prediction.HOME_WIN >= prediction.DRAW && prediction.HOME_WIN >= prediction.AWAY_WIN ? "home"
+    : prediction.AWAY_WIN >= prediction.DRAW && prediction.AWAY_WIN >= prediction.HOME_WIN ? "away"
+    : "draw";
   const actual = hg > ag ? "home" : ag > hg ? "away" : "draw";
   return predicted === actual;
 }
@@ -34,9 +32,9 @@ function didPredictionMatch(result: string, prediction: Prediction): boolean {
 function MiniSegmentBar({ h, d, a }: { h: number; d: number; a: number }) {
   const dominant = h >= a ? (h >= d ? "home" : "draw") : a >= d ? "away" : "draw";
   return (
-    <div className="bar-track" style={{ height:5 }}>
+    <div className="bar-track" style={{ height: 5 }}>
       <div className="bar-fill" style={{
-        width:"100%",
+        width: "100%",
         background: `linear-gradient(to right,
           ${dominant === "home" ? "var(--accent)" : "var(--text-faint)"} 0% ${h}%,
           var(--border) ${h}% ${h + d}%,
@@ -56,8 +54,8 @@ function ArchiveCard({ fixture }: { fixture: Fixture }) {
   const a = Math.round(fixture.prediction.AWAY_WIN * 100);
 
   return (
-    <div className="card" style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <div className="flex items-center justify-between">
+    <div className="card" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span className="badge badge-accent">{fixture.group}</span>
         <span className="badge" style={{
           background: correct ? "var(--positive-dim)" : "var(--negative-dim)",
@@ -67,23 +65,22 @@ function ArchiveCard({ fixture }: { fixture: Fixture }) {
         </span>
       </div>
 
-      <div className="flex items-center gap-3">
-        <span className="sport text-xl flex-1" style={{ color: homeWon ? "var(--foreground)" : "var(--text-faint)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <span className="sport" style={{ fontSize: "1.25rem", flex: 1, color: homeWon ? "var(--foreground)" : "var(--text-faint)" }}>
           {fixture.home_team}
         </span>
-        <div className="flex-shrink-0 px-4 py-1 rounded-lg font-bold text-lg sport"
-          style={{ background:"var(--bg-page)", color:"var(--foreground)" }}>
+        <div className="sport" style={{ flexShrink: 0, padding: "4px 16px", borderRadius: 8, fontWeight: 700, fontSize: "1.125rem", background: "var(--bg-page)", color: "var(--foreground)" }}>
           {hg} – {ag}
         </div>
-        <span className="sport text-xl flex-1 text-right" style={{ color: awayWon ? "var(--foreground)" : "var(--text-faint)" }}>
+        <span className="sport" style={{ fontSize: "1.25rem", flex: 1, textAlign: "right", color: awayWon ? "var(--foreground)" : "var(--text-faint)" }}>
           {fixture.away_team}
         </span>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <span className="card-title">Model prediction</span>
         <MiniSegmentBar h={h} d={d} a={a} />
-        <div className="flex justify-between text-xs" style={{ color:"var(--text-faint)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--text-faint)" }}>
           <span>{h}% {fixture.home_team}</span>
           <span>{d}% Draw</span>
           <span>{a}% {fixture.away_team}</span>
@@ -101,17 +98,17 @@ export default async function ArchivePage() {
   const accuracy = played.length > 0 ? Math.round((correctCount / played.length) * 100) : null;
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", gap:20 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <Link href="/" className="back-link">← Back</Link>
 
-      <div className="flex items-end justify-between gap-6" style={{ marginBottom:8 }}>
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, marginBottom: 8 }}>
         <div>
           <h1 className="page-title">Archive</h1>
           <p className="page-subtitle">Prediction accuracy vs real results</p>
         </div>
         {accuracy !== null && (
-          <div className="card" style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:2 }}>
-            <span className="sport" style={{ fontSize:"1.375rem", color:"var(--foreground)" }}>{accuracy}%</span>
+          <div className="card" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
+            <span className="sport" style={{ fontSize: "1.375rem", color: "var(--foreground)" }}>{accuracy}%</span>
             <span className="card-title">{correctCount}/{played.length} correct</span>
           </div>
         )}
@@ -120,7 +117,7 @@ export default async function ArchivePage() {
       {played.length === 0 ? (
         <div className="empty">No completed matches yet.</div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
           {played.map((f) => (
             <ArchiveCard key={f.match_number} fixture={f} />
           ))}

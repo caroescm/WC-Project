@@ -61,54 +61,20 @@ function groupProgress(fixtures: Fixture[]) {
   return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
 }
 
-const IconTarget = () => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.4"/>
-    <circle cx="8" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.4"/>
-    <circle cx="8" cy="8" r="1" fill="currentColor"/>
-  </svg>
-);
-const IconTrend = () => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-    <polyline points="1,11 5,7 9,9 15,3" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
-    <polyline points="11,3 15,3 15,7" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
-  </svg>
-);
-const IconSlash = () => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-    <rect x="2" y="5" width="12" height="2" rx="1" fill="currentColor" opacity="0.5"/>
-    <rect x="2" y="9" width="8" height="2" rx="1" fill="currentColor"/>
-  </svg>
-);
-const IconBolt = () => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-    <path d="M9.5 1.5L4 9h5l-2.5 5.5L14 7H9l.5-5.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
-  </svg>
-);
+/* ─── Section label ─────────────────────────── */
 
-/* ─── KPI ──────────────────────────────────── */
-
-function KpiCard({ label, big, sub, subColor, borderColor, iconBg, iconColor, Icon }: {
-  label: string; big: string; sub?: string; subColor?: string;
-  borderColor: string; iconBg: string; iconColor: string;
-  Icon: () => React.ReactElement;
-}) {
+function SectionLabel({ text, href, linkLabel }: { text: string; href?: string; linkLabel?: string }) {
   return (
-    <div className="card" style={{ display:"flex", flexDirection:"column", gap:8 }}>
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        <span style={{ fontSize:11, fontWeight:600, color:"var(--text-muted)" }}>{label}</span>
-        <div style={{ width:24, height:24, borderRadius:4, background:iconBg,
-                      color:iconColor, display:"flex", alignItems:"center", justifyContent:"center" }}>
-          <Icon />
-        </div>
-      </div>
-      <span className="sport" style={{ fontSize:"1.375rem", fontWeight:800, color:"var(--foreground)" }}>{big}</span>
-      {sub && <span style={{ fontSize:12, color: subColor ?? "var(--text-faint)" }}>{sub}</span>}
+    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+      <span style={{ fontSize:"0.6875rem", fontWeight:700, color:"var(--text-faint)", letterSpacing:"0.07em", textTransform:"uppercase" }}>
+        {text}
+      </span>
+      {href && <Link href={href} className="back-link">{linkLabel ?? "See all →"}</Link>}
     </div>
   );
 }
 
-/* ─── Dashboard ────────────────────────────── */
+/* ─── Dashboard ─────────────────────────────── */
 
 export default async function Home() {
   let fixtures: Fixture[] = [];
@@ -124,197 +90,391 @@ export default async function Home() {
   const upcoming = fixtures.filter(f => f.result === null);
   const stats    = deriveStats(played);
 
-  const simRanked = Object.entries(simulation)
-    .sort(([,a],[,b]) => b.winner - a.winner).slice(0, 8);
+  const simRanked = Object.entries(simulation).sort(([,a],[,b]) => b.winner - a.winner);
   const maxWinner = simRanked[0]?.[1].winner ?? 1;
+  const [topTeam, topEntry] = simRanked[0] ?? ["—", null];
 
   const xgEntries = stats ? Object.entries(stats.xgDelta).sort(([,a],[,b]) => b - a) : [];
-  const xgOver    = xgEntries.slice(0, 3);
-  const xgUnder   = [...xgEntries].sort(([,a],[,b]) => a - b).slice(0, 3);
+  const xgOver    = xgEntries[0] ?? null;
+  const xgUnder   = xgEntries.length > 0 ? xgEntries[xgEntries.length - 1] : null;
 
   const gProgress = groupProgress(fixtures);
 
-  const blPts  = stats ? ((stats.correct/stats.total) - stats.baseline) * 100 : null;
-  const upsetT = stats?.upsets[0];
+  const upsetT  = stats?.upsets[0];
+
+  // Per-match correct/incorrect log for the accuracy chart
+  const matchLog = played.flatMap(f => {
+    const parsed = parseResult(f.result!);
+    if (!parsed) return [];
+    const [hs, as_] = parsed;
+    const { HOME_WIN, DRAW, AWAY_WIN } = f.prediction;
+    const actual = hs > as_ ? "HOME_WIN" : hs < as_ ? "AWAY_WIN" : "DRAW";
+    const best   = HOME_WIN >= DRAW && HOME_WIN >= AWAY_WIN ? "HOME_WIN"
+                 : AWAY_WIN >= DRAW && AWAY_WIN >= HOME_WIN ? "AWAY_WIN" : "DRAW";
+    return [{ ok: best === actual, home: f.home_team, away: f.away_team }];
+  });
+
+  // Hero narrative — the model's single strongest conclusion right now
+  const heroConclusion =
+    simRanked.length === 0 ? "Simulation loading"
+    : topEntry!.winner > 0.20 ? `${topTeam} is the clear favorite`
+    : topEntry!.winner > 0.12 ? `${topTeam} leads a crowded field`
+    : `No clear favorite — ${topTeam} edges ahead`;
+
+  const heroDetail =
+    simRanked.length === 0 ? "Tournament odds will appear once the simulation is available." :
+    stats
+      ? `Monte Carlo simulation across 3,000 trials gives ${topTeam} a ${(topEntry!.winner * 100).toFixed(1)}% chance of lifting the trophy — the highest of any team. The model has called ${stats.correct} of ${stats.total} matches correctly (${(stats.correct / stats.total * 100).toFixed(0)}%).`
+      : `Monte Carlo simulation across 3,000 trials gives ${topTeam} a ${(topEntry!.winner * 100).toFixed(1)}% chance of lifting the trophy. Pre-tournament snapshot — accuracy updates as results come in.`;
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+    <div style={{ display:"flex", flexDirection:"column", gap:20 }}>
 
-      {/* KPI row */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
-        <KpiCard
-          label="Model Accuracy" Icon={IconTarget}
-          big={stats ? `${stats.correct} / ${stats.total}` : "—"}
-          sub={stats ? `${((stats.correct/stats.total)*100).toFixed(1)}% correct` : "No matches yet"}
-          borderColor="var(--accent)" iconBg="var(--accent-dim)" iconColor="var(--accent)" />
-        <KpiCard
-          label="vs Baseline" Icon={IconTrend}
-          big={blPts !== null ? `${blPts >= 0?"+":""}${blPts.toFixed(1)} pts` : "—"}
-          sub={blPts !== null ? `vs home-win baseline` : "No matches yet"}
-          subColor={blPts !== null ? (blPts >= 0 ? "var(--positive)" : "var(--negative)") : undefined}
-          borderColor="var(--accent)" iconBg="var(--accent-dim)" iconColor="var(--accent)" />
-        <KpiCard
-          label="Draws Called" Icon={IconSlash}
-          big={stats ? `${stats.drawCount} / ${stats.total}` : "—"}
-          sub={stats?.drawCount ? `Avg draw prob ${(stats.avgDrawProb*100).toFixed(1)}%` : "No matches yet"}
-          borderColor="var(--accent)" iconBg="var(--accent-dim)" iconColor="var(--accent)" />
-        <KpiCard
-          label="Biggest Upset" Icon={IconBolt}
-          big={upsetT ? upsetT.team : "—"}
-          sub={upsetT ? `won at ${(upsetT.prob*100).toFixed(1)}% odds` : "No matches yet"}
-          borderColor="var(--negative)" iconBg="var(--negative-dim)" iconColor="var(--negative)" />
-      </div>
-
-      {/* Middle row */}
-      <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:12, minHeight:0 }}>
-
-        {/* Monte Carlo */}
-        <div className="card" style={{ display:"flex", flexDirection:"column", minHeight:0, overflow:"hidden" }}>
-          <div className="card-header">
-            <span className="card-title">Tournament Odds</span>
-            <Link href="/montecarlo" className="back-link">See all →</Link>
-          </div>
-          <div style={{ flex:1, overflowY:"auto", display:"flex", flexDirection:"column", gap:6 }}>
-            {simRanked.length === 0 ? (
-              <div className="empty">Simulation unavailable</div>
-            ) : simRanked.map(([team, p], i) => (
-              <div key={team} style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <span style={{ width:16, fontSize:11, color:"var(--text-faint)", textAlign:"right", flexShrink:0 }}>{i+1}</span>
-                <span style={{ flex:1, fontSize:13, fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{team}</span>
-                <div className="bar-track" style={{ flex:1.5 }}>
-                  <div className="bar-fill" style={{ background: i < 3 ? "var(--accent)" : "var(--border)", width:`${(p.winner/maxWinner)*100}%` }} />
-                </div>
-                <span style={{ width:36, fontSize:13, fontWeight:600, color: i < 3 ? "var(--accent)" : "var(--text-faint)", textAlign:"right", flexShrink:0 }}>
-                  {(p.winner*100).toFixed(1)}%
-                </span>
-                <span className="badge badge-accent" style={{ flexShrink:0 }}>F {(p.final*100).toFixed(0)}%</span>
-              </div>
-            ))}
-          </div>
+      {/* ── 1. HERO INSIGHT ──────────────────────────────────────────
+          The model's single strongest conclusion. Leads with a verdict,
+          not a metric. Supporting numbers live on the right. */}
+      <div className="card" style={{ padding:"28px 32px", display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:32 }}>
+        <div style={{ flex:1, display:"flex", flexDirection:"column", gap:12, minWidth:0 }}>
+          <span style={{ fontSize:"0.6875rem", fontWeight:700, color:"var(--text-faint)", letterSpacing:"0.07em", textTransform:"uppercase" }}>
+            Model Conclusion
+          </span>
+          <h1 className="sport" style={{ fontSize:"2rem", lineHeight:1.1, margin:0 }}>
+            {heroConclusion}
+          </h1>
+          <p style={{ fontSize:"0.875rem", color:"var(--text-muted)", lineHeight:1.7, margin:0, maxWidth:560 }}>
+            {heroDetail}
+          </p>
         </div>
 
-        {/* xG */}
-        <div className="card" style={{ display:"flex", flexDirection:"column", minHeight:0, overflow:"hidden" }}>
-          <div className="card-header">
-            <span className="card-title">xG Performance</span>
-            <Link href="/performance" className="back-link">See all →</Link>
-          </div>
-          {xgEntries.length === 0 ? (
-            <div className="empty">No matches played yet</div>
-          ) : (
-            <div style={{ flex:1, overflowY:"auto", display:"flex", flexDirection:"column", gap:8 }}>
-              {xgOver.map(([team, delta]) => (
-                <div key={team} style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <span style={{ fontSize:13 }}>{team}</span>
-                  <span style={{ fontSize:13, fontWeight:600, color:"var(--positive)" }}>+{delta.toFixed(1)}</span>
-                </div>
-              ))}
-              {xgOver.length > 0 && xgUnder.length > 0 && <hr style={{ border:"none", borderTop:"1px solid var(--border)", margin:0 }} />}
-              {xgUnder.map(([team, delta]) => (
-                <div key={team} style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <span style={{ fontSize:13 }}>{team}</span>
-                  <span style={{ fontSize:13, fontWeight:600, color:"var(--negative)" }}>{delta.toFixed(1)}</span>
-                </div>
-              ))}
+        <div style={{ display:"flex", flexDirection:"column", gap:8, flexShrink:0, alignItems:"flex-end" }}>
+          {topEntry && (
+            <div style={{ textAlign:"right" }}>
+              <div className="sport" style={{ fontSize:"2.25rem", color:"var(--accent)", lineHeight:1 }}>
+                {(topEntry.winner * 100).toFixed(1)}%
+              </div>
+              <div style={{ fontSize:"0.75rem", color:"var(--text-faint)", marginTop:2 }}>
+                {topTeam} to win
+              </div>
+            </div>
+          )}
+          {stats && (
+            <div style={{ textAlign:"right", paddingTop:8, borderTop:"1px solid var(--border)" }}>
+              <div className="sport" style={{ fontSize:"1.375rem", lineHeight:1 }}>
+                {(stats.correct / stats.total * 100).toFixed(0)}%
+              </div>
+              <div style={{ fontSize:"0.75rem", color:"var(--text-faint)", marginTop:2 }}>
+                model accuracy
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Bottom row */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, minHeight:0 }}>
+      {/* ── 2. TOURNAMENT OUTLOOK ──────────────────────────────────
+          Who has a realistic path to the trophy. Full-width so the
+          relative gaps between teams read clearly at a glance. */}
+      <div>
+        <SectionLabel text="Tournament Outlook" href="/montecarlo" linkLabel="Full simulation →" />
+        <div className="card" style={{ padding:0, overflow:"hidden" }}>
+          {simRanked.length === 0 ? (
+            <div className="empty">Simulation unavailable</div>
+          ) : simRanked.slice(0, 8).map(([team, p], i) => {
+            const isTop = i < 3;
+            const barPct = (p.winner / maxWinner) * 100;
+            return (
+              <div key={team} style={{
+                display:"flex", alignItems:"center", gap:12, padding:"12px 20px",
+                borderBottom: i < 7 ? "1px solid var(--border)" : "none",
+                background: i === 0 ? "var(--accent-dim)" : "transparent",
+              }}>
+                <span style={{ width:18, fontSize:"0.6875rem", fontWeight:600, color:"var(--text-faint)", flexShrink:0, textAlign:"right" }}>
+                  {i + 1}
+                </span>
+                <span style={{ width:180, fontSize:"0.875rem", fontWeight: isTop ? 600 : 500, color: isTop ? "var(--foreground)" : "var(--text-muted)", flexShrink:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                  {team}
+                </span>
+                <div className="bar-track" style={{ flex:1 }}>
+                  <div className="bar-fill" style={{ width:`${barPct}%`, background: isTop ? "var(--accent)" : "var(--border)" }} />
+                </div>
+                <span style={{ width:48, fontSize:"0.875rem", fontWeight:700, color: isTop ? "var(--accent)" : "var(--text-faint)", textAlign:"right", flexShrink:0 }}>
+                  {(p.winner * 100).toFixed(1)}%
+                </span>
+                <span style={{ width:56, fontSize:"0.75rem", color:"var(--text-faint)", textAlign:"right", flexShrink:0 }}>
+                  F {(p.final * 100).toFixed(0)}%
+                </span>
+                <span style={{ width:56, fontSize:"0.75rem", color:"var(--text-faint)", textAlign:"right", flexShrink:0 }}>
+                  SF {(p.sf * 100).toFixed(0)}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-        {/* Next matches */}
-        <div className="card" style={{ display:"flex", flexDirection:"column", minHeight:0, overflow:"hidden" }}>
-          <div className="card-header">
-            <span className="card-title">Next Matches</span>
-            <Link href="/upcoming" className="back-link">See all →</Link>
+      {/* ── 3. KEY CHANGES + UPCOMING MATCHES ────────────────────
+          Key Changes: where the model is being surprised (xG delta).
+          Upcoming: what the model expects next. Side by side because
+          together they answer "what's happened?" and "what's next?" */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 2fr", gap:20 }}>
+
+        {/* Key Changes */}
+        <div>
+          <SectionLabel text="Key Changes" href="/performance" linkLabel="Full xG report →" />
+          <div className="card" style={{ display:"flex", flexDirection:"column", gap:16 }}>
+            {xgEntries.length === 0 ? (
+              <div>
+                <p style={{ fontSize:"0.8125rem", color:"var(--text-muted)", lineHeight:1.6, margin:0 }}>
+                  No matches played yet. Check back after the opening round to see which teams are outperforming the model.
+                </p>
+              </div>
+            ) : (
+              <>
+                {xgOver && (
+                  <div>
+                    <div style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--positive)", letterSpacing:"0.05em", textTransform:"uppercase", marginBottom:6 }}>
+                      Outperforming
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline" }}>
+                      <span style={{ fontSize:"0.9375rem", fontWeight:600 }}>{xgOver[0]}</span>
+                      <span style={{ fontSize:"1.125rem", fontWeight:700, color:"var(--positive)" }}>
+                        +{xgOver[1].toFixed(1)} goals
+                      </span>
+                    </div>
+                    <p style={{ fontSize:"0.75rem", color:"var(--text-faint)", marginTop:4, lineHeight:1.5 }}>
+                      Scoring {xgOver[1].toFixed(1)} more than the model expects — form may be stronger than rated.
+                    </p>
+                  </div>
+                )}
+                <div style={{ height:1, background:"var(--border)" }} />
+                {xgUnder && (
+                  <div>
+                    <div style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--negative)", letterSpacing:"0.05em", textTransform:"uppercase", marginBottom:6 }}>
+                      Underperforming
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline" }}>
+                      <span style={{ fontSize:"0.9375rem", fontWeight:600 }}>{xgUnder[0]}</span>
+                      <span style={{ fontSize:"1.125rem", fontWeight:700, color:"var(--negative)" }}>
+                        {xgUnder[1].toFixed(1)} goals
+                      </span>
+                    </div>
+                    <p style={{ fontSize:"0.75rem", color:"var(--text-faint)", marginTop:4, lineHeight:1.5 }}>
+                      Scoring {Math.abs(xgUnder[1]).toFixed(1)} fewer than expected — model may be over-rating this team.
+                    </p>
+                  </div>
+                )}
+                {upsetT && (
+                  <>
+                    <div style={{ height:1, background:"var(--border)" }} />
+                    <div>
+                      <div style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--text-faint)", letterSpacing:"0.05em", textTransform:"uppercase", marginBottom:6 }}>
+                        Biggest Upset
+                      </div>
+                      <div style={{ fontSize:"0.875rem", fontWeight:500 }}>{upsetT.home} {upsetT.score} {upsetT.away}</div>
+                      <span className="badge" style={{ background:"var(--negative-dim)", color:"var(--negative)", marginTop:6, display:"inline-block" }}>
+                        winner at {(upsetT.prob * 100).toFixed(1)}% odds
+                      </span>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
           </div>
-          <div style={{ flex:1, overflowY:"auto", display:"flex", flexDirection:"column" }}>
-            {upcoming.slice(0,3).map((f, idx) => {
+        </div>
+
+        {/* Upcoming Matches */}
+        <div>
+          <SectionLabel text="Upcoming" href="/upcoming" linkLabel="All fixtures →" />
+          <div className="card" style={{ padding:0, overflow:"hidden" }}>
+            {upcoming.length === 0 ? (
+              <div className="empty">No upcoming fixtures</div>
+            ) : upcoming.slice(0, 5).map((f, idx) => {
               const maxP = Math.max(f.prediction.HOME_WIN, f.prediction.DRAW, f.prediction.AWAY_WIN);
+              const isLast = idx === Math.min(upcoming.length, 5) - 1;
               return (
                 <div key={f.match_number} style={{
-                  padding:"10px 0", borderBottom: idx < 2 ? "1px solid var(--border)" : "none",
-                  display:"flex", flexDirection:"column", gap:4,
+                  padding:"14px 20px",
+                  borderBottom: isLast ? "none" : "1px solid var(--border)",
+                  display:"flex", alignItems:"center", gap:16,
                 }}>
-                  <div style={{ display:"flex", justifyContent:"space-between" }}>
-                    <span style={{ fontSize:13, fontWeight:500, color:"var(--foreground)" }}>
-                      {f.home_team} <span style={{ color:"var(--text-faint)", fontWeight:400 }}>vs</span> {f.away_team}
-                    </span>
-                    <span style={{ fontSize:11, color:"var(--text-faint)", flexShrink:0, marginLeft:6 }}>
-                      {f.group || "KO"}
-                    </span>
+                  <div style={{ display:"flex", flexDirection:"column", gap:2, flexShrink:0, width:36 }}>
+                    <span style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--text-faint)" }}>{f.group || "KO"}</span>
+                    <span style={{ fontSize:"0.6875rem", color:"var(--text-faint)" }}>{f.date.split(" ")[0]}</span>
                   </div>
-                  <div style={{ fontSize:11, color:"var(--text-faint)" }}>{f.date}</div>
-                  <div style={{ display:"flex", gap:4 }}>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:"0.875rem", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                      {f.home_team} <span style={{ color:"var(--text-faint)", fontWeight:400 }}>vs</span> {f.away_team}
+                    </div>
+                  </div>
+                  <div style={{ display:"flex", gap:4, flexShrink:0 }}>
                     {[
                       { label:`H ${(f.prediction.HOME_WIN*100).toFixed(0)}%`, val:f.prediction.HOME_WIN },
-                      { label:`D ${(f.prediction.DRAW*100).toFixed(0)}%`, val:f.prediction.DRAW },
+                      { label:`D ${(f.prediction.DRAW*100).toFixed(0)}%`,    val:f.prediction.DRAW },
                       { label:`A ${(f.prediction.AWAY_WIN*100).toFixed(0)}%`, val:f.prediction.AWAY_WIN },
                     ].map((pill, pi) => (
                       <span key={pi} className="badge" style={{
                         background: pill.val === maxP ? "var(--accent-dim)" : "var(--bg-page)",
                         color: pill.val === maxP ? "var(--accent)" : "var(--text-muted)",
                         fontWeight: pill.val === maxP ? 600 : 400,
-                      }}>{pill.label}</span>
+                      }}>
+                        {pill.label}
+                      </span>
                     ))}
                   </div>
-                </div>
-              );
-            })}
-            {upcoming.length === 0 && <div className="empty">No upcoming fixtures</div>}
-          </div>
-        </div>
-
-        {/* Upsets */}
-        <div className="card" style={{ display:"flex", flexDirection:"column", minHeight:0, overflow:"hidden" }}>
-          <div className="card-header">
-            <span className="card-title">Biggest Upsets</span>
-            <Link href="/upsets" className="back-link">See all →</Link>
-          </div>
-          <div style={{ flex:1, overflowY:"auto", display:"flex", flexDirection:"column" }}>
-            {!stats || stats.upsets.length === 0 ? (
-              <div className="empty">No matches played yet</div>
-            ) : stats.upsets.slice(0,3).map((u, idx) => (
-              <div key={idx} style={{
-                padding:"10px 0",
-                borderBottom: idx < 2 ? "1px solid var(--border)" : "none",
-                display:"flex", flexDirection:"column", gap:4,
-              }}>
-                <span style={{ fontSize:13, fontWeight:500 }}>{u.home} {u.score} {u.away}</span>
-                <span className="badge" style={{ background:"var(--negative-dim)", color:"var(--negative)", alignSelf:"flex-start" }}>
-                  won at {(u.prob*100).toFixed(1)}%
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Group progress */}
-        <div className="card" style={{ display:"flex", flexDirection:"column", minHeight:0, overflow:"hidden" }}>
-          <div className="card-header">
-            <span className="card-title">Group Progress</span>
-          </div>
-          <div style={{ flex:1, overflowY:"auto", display:"flex", flexDirection:"column", gap:6 }}>
-            {gProgress.length === 0 ? (
-              <div className="empty">No fixture data</div>
-            ) : gProgress.map(([group, { played: p, total: t }]) => {
-              const letter = group.replace("Group ", "");
-              const pct    = t > 0 ? (p / t) * 100 : 0;
-              return (
-                <div key={group} style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <span style={{ width:14, fontSize:11, fontWeight:600, color:"var(--text-muted)", flexShrink:0 }}>{letter}</span>
-                  <div className="bar-track" style={{ flex:1 }}>
-                    <div className="bar-fill" style={{ background:"var(--accent)", width:`${pct}%` }} />
-                  </div>
-                  <span style={{ fontSize:11, color:"var(--text-faint)", flexShrink:0 }}>{p}/{t}</span>
                 </div>
               );
             })}
           </div>
         </div>
       </div>
+
+      {/* ── 4. MODEL PERFORMANCE ─────────────────────────────────
+          Running accuracy across every match played. Each dot is one
+          match — green = correct call, red = wrong. Line shows trend. */}
+      <div>
+        <SectionLabel text="Prediction Accuracy" href="/accuracy" linkLabel="Full report →" />
+        <div className="card">
+          {matchLog.length === 0 ? (
+            <div className="empty">No matches played yet — chart updates after each result.</div>
+          ) : (() => {
+            // SVG dimensions
+            const W = 540, H = 90;
+            const PAD = { t: 14, r: 16, b: 18, l: 36 };
+            const cW = W - PAD.l - PAD.r;
+            const cH = H - PAD.t - PAD.b;
+            const n = matchLog.length;
+
+            // Compute running accuracy and SVG coords per match
+            let runCorrect = 0;
+            const pts = matchLog.map(({ ok }, i) => {
+              if (ok) runCorrect++;
+              const acc = runCorrect / (i + 1);
+              const x = PAD.l + (n === 1 ? cW / 2 : (i / (n - 1)) * cW);
+              const y = PAD.t + (1 - acc) * cH;
+              return { x, y, ok, acc };
+            });
+
+            const polyline = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+
+            // Y-axis reference levels
+            const refs = [
+              { pct: 1.0, label: "100%" },
+              { pct: 0.5, label:  "50%" },
+              { pct: 0.0, label:   "0%" },
+            ];
+
+            const finalAcc = pts[pts.length - 1].acc;
+
+            return (
+              <div style={{ display:"flex", alignItems:"flex-start", gap:24 }}>
+                {/* Headline stat */}
+                <div style={{ flexShrink:0, paddingTop:4 }}>
+                  <div className="sport" style={{ fontSize:"2rem", lineHeight:1, color:"var(--accent)" }}>
+                    {(finalAcc * 100).toFixed(0)}%
+                  </div>
+                  <div style={{ fontSize:"0.75rem", color:"var(--text-faint)", marginTop:4 }}>
+                    {stats!.correct} / {stats!.total} correct
+                  </div>
+                </div>
+
+                {/* Chart */}
+                <svg viewBox={`0 0 ${W} ${H}`} style={{ width:"100%", height: H, display:"block", overflow:"visible" }}>
+                  {/* Grid lines */}
+                  {refs.map(({ pct, label }) => {
+                    const y = PAD.t + (1 - pct) * cH;
+                    return (
+                      <g key={label}>
+                        <line
+                          x1={PAD.l} y1={y} x2={PAD.l + cW} y2={y}
+                          stroke="var(--border)" strokeWidth="1"
+                          strokeDasharray={pct === 0.5 ? "3 3" : undefined}
+                        />
+                        <text x={PAD.l - 6} y={y + 4} textAnchor="end"
+                          style={{ fontSize:9, fill:"var(--text-faint)", fontFamily:"monospace" }}>
+                          {label}
+                        </text>
+                      </g>
+                    );
+                  })}
+
+                  {/* Accuracy line */}
+                  {n > 1 && (
+                    <polyline
+                      points={polyline}
+                      fill="none"
+                      stroke="var(--accent)"
+                      strokeWidth="1.5"
+                      strokeLinejoin="round"
+                      opacity="0.5"
+                    />
+                  )}
+
+                  {/* Match dots */}
+                  {pts.map(({ x, y, ok }, i) => (
+                    <circle
+                      key={i}
+                      cx={x.toFixed(1)} cy={y.toFixed(1)} r="4"
+                      fill={ok ? "var(--positive)" : "var(--negative)"}
+                      stroke="#ffffff" strokeWidth="1.5"
+                    />
+                  ))}
+
+                  {/* Match index labels on x-axis */}
+                  <text x={PAD.l} y={H - 2} textAnchor="middle"
+                    style={{ fontSize:9, fill:"var(--text-faint)" }}>1</text>
+                  {n > 1 && (
+                    <text x={PAD.l + cW} y={H - 2} textAnchor="middle"
+                      style={{ fontSize:9, fill:"var(--text-faint)" }}>{n}</text>
+                  )}
+                </svg>
+
+                {/* Legend */}
+                <div style={{ flexShrink:0, display:"flex", flexDirection:"column", gap:8, paddingTop:4 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                    <div style={{ width:8, height:8, borderRadius:"50%", background:"var(--positive)", flexShrink:0 }} />
+                    <span style={{ fontSize:"0.75rem", color:"var(--text-faint)" }}>Correct</span>
+                  </div>
+                  <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                    <div style={{ width:8, height:8, borderRadius:"50%", background:"var(--negative)", flexShrink:0 }} />
+                    <span style={{ fontSize:"0.75rem", color:"var(--text-faint)" }}>Wrong</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      </div>
+
+      {/* ── 5. GROUP ANALYSIS ────────────────────────────────────
+          Tournament stage context — useful for tracking, not for
+          decision-making. Compact and at the bottom. */}
+      <div>
+        <SectionLabel text="Group Progress" />
+        <div className="card">
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:"8px 32px" }}>
+            {gProgress.length === 0 ? (
+              <div className="empty" style={{ gridColumn:"1 / -1" }}>No fixture data</div>
+            ) : gProgress.map(([group, { played: p, total: t }]) => {
+              const letter = group.replace("Group ", "");
+              const pct    = t > 0 ? (p / t) * 100 : 0;
+              const done   = p === t;
+              return (
+                <div key={group} style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <span style={{ width:14, fontSize:"0.6875rem", fontWeight:700, color: done ? "var(--positive)" : "var(--text-muted)", flexShrink:0 }}>
+                    {letter}
+                  </span>
+                  <div className="bar-track" style={{ flex:1 }}>
+                    <div className="bar-fill" style={{ background: done ? "var(--positive)" : "var(--accent)", width:`${pct}%` }} />
+                  </div>
+                  <span style={{ fontSize:"0.6875rem", color:"var(--text-faint)", flexShrink:0, width:24, textAlign:"right" }}>
+                    {p}/{t}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }

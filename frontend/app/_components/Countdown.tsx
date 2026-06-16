@@ -34,31 +34,20 @@ export function Countdown({ nextDate, homeTeam, awayTeam, group }: CountdownProp
   }, [nextDate]);
 
   return (
-    <div
-      className="flex items-center justify-between gap-4 rounded-lg px-4 py-2.5"
-      style={{
-        background: "var(--accent-light)",
-        border: "1px solid var(--accent-dim)",
-      }}
-    >
-      <div className="flex flex-col gap-0.5 min-w-0">
-        <span
-          className="text-xs font-semibold"
-          style={{ color: "var(--accent)" }}
-        >
+    <div style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16,
+      borderRadius: 8, padding: "10px 16px",
+      background: "var(--accent-light)", border: "1px solid var(--accent-dim)",
+    }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+        <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--accent)" }}>
           Next · {group}
         </span>
-        <span className="text-sm font-semibold truncate" style={{ color: "var(--foreground)" }}>
-          {homeTeam}{" "}
-          <span style={{ color: "var(--text-faint)" }}>vs</span>{" "}
-          {awayTeam}
+        <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {homeTeam} <span style={{ color: "var(--text-faint)" }}>vs</span> {awayTeam}
         </span>
       </div>
-      <span
-        className="sport text-2xl flex-shrink-0"
-        style={{ color: "var(--accent)" }}
-        suppressHydrationWarning
-      >
+      <span className="sport" style={{ fontSize: "1.5rem", flexShrink: 0, color: "var(--accent)" }} suppressHydrationWarning>
         {timeLeft || "—"}
       </span>
     </div>

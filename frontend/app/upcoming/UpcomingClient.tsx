@@ -23,10 +23,8 @@ interface Fixture {
   prediction: Prediction;
 }
 
-// ── Standings calculation ─────────────────────────
-// Played matches → actual pts. Upcoming → expected pts (HOME_WIN×3 + DRAW×1).
 function computeStandings(allFixtures: Fixture[], group: string) {
-  const pts  = new Map<string, number>();
+  const pts   = new Map<string, number>();
   const played = new Map<string, number>();
 
   for (const f of allFixtures.filter((f) => f.group === group)) {
@@ -37,24 +35,15 @@ function computeStandings(allFixtures: Fixture[], group: string) {
       const [hg, ag] = f.result.split("-").map((s) => parseInt(s.trim(), 10));
       played.set(f.home_team, played.get(f.home_team)! + 1);
       played.set(f.away_team, played.get(f.away_team)! + 1);
-      if (hg > ag) {
-        pts.set(f.home_team, pts.get(f.home_team)! + 3);
-      } else if (ag > hg) {
-        pts.set(f.away_team, pts.get(f.away_team)! + 3);
-      } else {
+      if (hg > ag)       pts.set(f.home_team, pts.get(f.home_team)! + 3);
+      else if (ag > hg)  pts.set(f.away_team, pts.get(f.away_team)! + 3);
+      else {
         pts.set(f.home_team, pts.get(f.home_team)! + 1);
         pts.set(f.away_team, pts.get(f.away_team)! + 1);
       }
     } else if (f.prediction !== null) {
-      // Expected value from prediction
-      pts.set(
-        f.home_team,
-        pts.get(f.home_team)! + f.prediction.HOME_WIN * 3 + f.prediction.DRAW
-      );
-      pts.set(
-        f.away_team,
-        pts.get(f.away_team)! + f.prediction.AWAY_WIN * 3 + f.prediction.DRAW
-      );
+      pts.set(f.home_team, pts.get(f.home_team)! + f.prediction.HOME_WIN * 3 + f.prediction.DRAW);
+      pts.set(f.away_team, pts.get(f.away_team)! + f.prediction.AWAY_WIN * 3 + f.prediction.DRAW);
     }
   }
 
@@ -63,7 +52,6 @@ function computeStandings(allFixtures: Fixture[], group: string) {
     .sort((a, b) => b.pts - a.pts);
 }
 
-// ── Upset detection ───────────────────────────────
 function isUpsetAlert(f: Fixture): boolean {
   if (!f.prediction) return false;
   const { home_elo, away_elo, HOME_WIN, AWAY_WIN } = f.prediction;
@@ -73,113 +61,48 @@ function isUpsetAlert(f: Fixture): boolean {
   return underdogWin >= 0.28;
 }
 
-// ── Date helpers ──────────────────────────────────
 function formatDateHeader(ddmmyyyy: string) {
-  // Use noon UTC to avoid date-shift when converting to local timezone
   const [dd, mm, yyyy] = ddmmyyyy.split("/");
   return new Date(Date.UTC(+yyyy, +mm - 1, +dd, 12)).toLocaleDateString([], {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
+    weekday: "long", month: "long", day: "numeric",
   });
 }
 
-// ── Sub-components ────────────────────────────────
-
-function GroupStandings({
-  standings,
-}: {
-  standings: Array<{ name: string; pts: number; played: number }>;
-}) {
+function GroupStandings({ standings }: { standings: Array<{ name: string; pts: number; played: number }> }) {
   const maxPts = Math.max(...standings.map((s) => s.pts), 1);
 
   return (
-    <div
-      className="rounded-lg overflow-hidden"
-      style={{ border: "1px solid var(--border)" }}
-    >
-      {/* Header */}
-      <div
-        className="px-4 py-2 flex items-center justify-between"
-        style={{
-          background: "var(--bg-page)",
-          borderBottom: "1px solid var(--border)",
-        }}
-      >
-        <span
-          className="text-xs font-semibold"
-          style={{ color: "var(--text-muted)" }}
-        >
-          Projected Standings
-        </span>
-        <span className="text-xs" style={{ color: "var(--text-faint)", opacity: 0.5 }}>
-          xPts
-        </span>
+    <div style={{ border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden" }}>
+      <div style={{ padding: "8px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg-page)", borderBottom: "1px solid var(--border)" }}>
+        <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: "var(--text-muted)" }}>Projected Standings</span>
+        <span style={{ fontSize: "0.6875rem", color: "var(--text-faint)", opacity: 0.5 }}>xPts</span>
       </div>
 
       {standings.map((t, i) => {
-        const barW = (t.pts / maxPts) * 100;
         const qualifies = i < 2;
-        const ptsDisplay =
-          t.pts % 1 === 0 ? t.pts.toString() : t.pts.toFixed(1);
+        const barW = (t.pts / maxPts) * 100;
+        const ptsDisplay = t.pts % 1 === 0 ? t.pts.toString() : t.pts.toFixed(1);
 
         return (
-          <div
-            key={t.name}
-            className="flex items-center gap-3 px-4 py-2.5"
-            style={{
-              borderBottom:
-                i < standings.length - 1
-                  ? "1px solid var(--border)"
-                  : undefined,
-            }}
-          >
-            {/* Rank */}
-            <span
-              className="text-xs font-bold w-4 text-center flex-shrink-0"
-              style={{ color: qualifies ? "var(--accent)" : "var(--text-faint)" }}
-            >
+          <div key={t.name} style={{
+            display: "flex", alignItems: "center", gap: 12, padding: "10px 16px",
+            borderBottom: i < standings.length - 1 ? "1px solid var(--border)" : undefined,
+          }}>
+            <span style={{ fontSize: "0.75rem", fontWeight: 700, width: 16, textAlign: "center", flexShrink: 0, color: qualifies ? "var(--accent)" : "var(--text-faint)" }}>
               {i + 1}
             </span>
-
-            {/* Team */}
-            <span
-              className="text-sm font-semibold flex-1 min-w-0 truncate"
-              style={{ color: qualifies ? "var(--foreground)" : "var(--text-muted)" }}
-            >
+            <span style={{ fontSize: "0.875rem", fontWeight: 600, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: qualifies ? "var(--foreground)" : "var(--text-muted)" }}>
               {t.name}
             </span>
-
-            {/* Q2 qualifier dot */}
             {qualifies && (
-              <span
-                className="text-xs font-bold flex-shrink-0"
-                style={{ color: "var(--accent)", opacity: 0.6 }}
-                title="Projected qualifier"
-              >
+              <span style={{ fontSize: "0.75rem", fontWeight: 700, flexShrink: 0, color: "var(--accent)", opacity: 0.6 }} title="Projected qualifier">
                 Q
               </span>
             )}
-
-            {/* Bar */}
-            <div
-              className="rounded-full overflow-hidden flex-shrink-0"
-              style={{ width: 72, height: 4, background: "var(--bg-page)" }}
-            >
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${barW}%`,
-                  background: qualifies ? "var(--accent)" : "var(--text-faint)",
-                }}
-              />
+            <div style={{ borderRadius: 9999, overflow: "hidden", flexShrink: 0, width: 72, height: 4, background: "var(--bg-page)" }}>
+              <div style={{ height: "100%", borderRadius: 9999, width: `${barW}%`, background: qualifies ? "var(--accent)" : "var(--text-faint)" }} />
             </div>
-
-            {/* Points */}
-            <span
-              className="text-xs font-bold font-mono w-7 text-right flex-shrink-0"
-              style={{ color: qualifies ? "var(--accent)" : "var(--text-muted)" }}
-            >
+            <span style={{ fontSize: "0.75rem", fontWeight: 700, fontFamily: "monospace", width: 28, textAlign: "right", flexShrink: 0, color: qualifies ? "var(--accent)" : "var(--text-muted)" }}>
               {ptsDisplay}
             </span>
           </div>
@@ -194,45 +117,33 @@ function MatchCard({ fixture }: { fixture: Fixture }) {
   const upset = isUpsetAlert(fixture);
 
   return (
-    <div
-      className="card"
-      style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-2">
+    <div className="card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span className="badge badge-accent">{fixture.group}</span>
           {upset && (
-            <span className="badge" style={{ background:"rgba(249,115,22,0.1)", color:"#f97316" }}>
+            <span className="badge" style={{ background: "rgba(249,115,22,0.1)", color: "#f97316" }}>
               Upset Alert
             </span>
           )}
         </div>
-        <span className="text-xs flex-shrink-0" style={{ color: "var(--text-faint)" }}>
+        <span style={{ fontSize: "0.75rem", flexShrink: 0, color: "var(--text-faint)" }}>
           {timePart} · {fixture.location.split(" ")[0]}
         </span>
       </div>
 
-      {/* Teams */}
-      <div className="flex items-center justify-between gap-3">
-        <span className="sport text-2xl flex-1" style={{ color: "var(--foreground)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <span className="sport" style={{ fontSize: "1.5rem", flex: 1, color: "var(--foreground)" }}>
           {fixture.home_team}
         </span>
-        <div
-          className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold"
-          style={{ background: "var(--bg-page)", color: "var(--text-faint)" }}
-        >
+        <div style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 600, background: "var(--bg-page)", color: "var(--text-faint)" }}>
           vs
         </div>
-        <span
-          className="sport text-2xl flex-1 text-right"
-          style={{ color: "var(--foreground)" }}
-        >
+        <span className="sport" style={{ fontSize: "1.5rem", flex: 1, textAlign: "right", color: "var(--foreground)" }}>
           {fixture.away_team}
         </span>
       </div>
 
-      {/* Probability bar */}
       {fixture.prediction && (
         <>
           <AnimatedBar
@@ -242,7 +153,7 @@ function MatchCard({ fixture }: { fixture: Fixture }) {
             homeTeam={fixture.home_team}
             awayTeam={fixture.away_team}
           />
-          <div className="flex justify-between text-xs" style={{ color: "var(--text-faint)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--text-faint)" }}>
             <span>ELO {fixture.prediction.home_elo}</span>
             <span>ELO {fixture.prediction.away_elo}</span>
           </div>
@@ -252,14 +163,11 @@ function MatchCard({ fixture }: { fixture: Fixture }) {
   );
 }
 
-// ── Main export ───────────────────────────────────
-
 export function UpcomingClient({ fixtures }: { fixtures: Fixture[] }) {
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
 
   const upcoming = fixtures.filter((f) => f.result === null);
 
-  // Unique groups with upcoming matches, sorted
   const groups = [...new Set(upcoming.map((f) => f.group))].sort((a, b) => {
     const letter = (g: string) => g.replace("Group ", "");
     return letter(a).localeCompare(letter(b));
@@ -268,18 +176,19 @@ export function UpcomingClient({ fixtures }: { fixtures: Fixture[] }) {
   const visibleGroups = activeGroup ? [activeGroup] : groups;
 
   return (
-    <div className="flex flex-col gap-10">
+    <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
 
-      {/* ── Group filter ──────────────────────────── */}
-      <div className="flex flex-wrap gap-2">
+      {/* Group filter */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         <button
           onClick={() => setActiveGroup(null)}
-      className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150"
-      style={{
-        background: activeGroup === null ? "var(--accent)" : "var(--bg-page)",
-        color: activeGroup === null ? "#ffffff" : "var(--text-muted)",
-        border: activeGroup === null ? "1px solid var(--accent)" : "1px solid var(--border)",
-      }}
+          style={{
+            padding: "6px 12px", borderRadius: 8, fontSize: "0.75rem", fontWeight: 600,
+            cursor: "pointer", transition: "all 0.15s",
+            background: activeGroup === null ? "var(--accent)" : "var(--bg-page)",
+            color: activeGroup === null ? "#ffffff" : "var(--text-muted)",
+            border: activeGroup === null ? "1px solid var(--accent)" : "1px solid var(--border)",
+          }}
         >
           All
         </button>
@@ -289,8 +198,9 @@ export function UpcomingClient({ fixtures }: { fixtures: Fixture[] }) {
             <button
               key={g}
               onClick={() => setActiveGroup(active ? null : g)}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150"
               style={{
+                padding: "6px 12px", borderRadius: 8, fontSize: "0.75rem", fontWeight: 600,
+                cursor: "pointer", transition: "all 0.15s",
                 background: active ? "var(--accent)" : "var(--bg-page)",
                 color: active ? "#ffffff" : "var(--text-muted)",
                 border: active ? "1px solid var(--accent)" : "1px solid var(--border)",
@@ -302,12 +212,11 @@ export function UpcomingClient({ fixtures }: { fixtures: Fixture[] }) {
         })}
       </div>
 
-      {/* ── Group sections ────────────────────────── */}
+      {/* Group sections */}
       {visibleGroups.map((group) => {
         const standings = computeStandings(fixtures, group);
         const groupUpcoming = upcoming.filter((f) => f.group === group);
 
-        // Sub-group by date within this group
         const byDate = new Map<string, Fixture[]>();
         for (const f of groupUpcoming) {
           const d = f.date.split(" ")[0];
@@ -316,34 +225,29 @@ export function UpcomingClient({ fixtures }: { fixtures: Fixture[] }) {
         }
 
         return (
-          <div key={group} className="flex flex-col gap-5">
-            {/* Group header */}
-            <div className="flex items-center gap-4">
-              <h2 className="sport text-3xl" style={{ color: "var(--accent)" }}>
+          <div key={group} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            {/* Group heading */}
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <h2 className="sport" style={{ fontSize: "1.875rem", color: "var(--accent)" }}>
                 {group}
               </h2>
-          <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
-          <span className="text-xs" style={{ color: "var(--text-faint)" }}>
+              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+              <span style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>
                 {groupUpcoming.length} match{groupUpcoming.length !== 1 ? "es" : ""} remaining
               </span>
             </div>
 
-            {/* Standings */}
             <GroupStandings standings={standings} />
 
-            {/* Matches by date */}
             {Array.from(byDate.entries()).map(([date, matches]) => (
-              <div key={date} className="flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                  <p
-                    className="text-xs font-bold whitespace-nowrap"
-                    style={{ color: "var(--text-muted)" }}
-                  >
+              <div key={date} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <p style={{ fontSize: "0.75rem", fontWeight: 700, whiteSpace: "nowrap", color: "var(--text-muted)" }}>
                     {formatDateHeader(date)}
                   </p>
-                  <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                  <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
                   {matches.map((f) => (
                     <MatchCard key={f.match_number} fixture={f} />
                   ))}
@@ -355,7 +259,7 @@ export function UpcomingClient({ fixtures }: { fixtures: Fixture[] }) {
       })}
 
       {upcoming.length === 0 && (
-        <p style={{ color: "var(--text-muted)" }}>No upcoming matches found.</p>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.8125rem" }}>No upcoming matches found.</p>
       )}
     </div>
   );

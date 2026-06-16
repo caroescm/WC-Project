@@ -23,7 +23,7 @@ export function DashboardMatches({ matches }: { matches: Match[] }) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {matches.filter((m) => m.prediction !== null).map((m, i) => {
         const matchDate = parseMatchDateUTC(m.date);
         const dateLabel = matchDate.toLocaleDateString([], { month: "short", day: "numeric" });
@@ -36,21 +36,21 @@ export function DashboardMatches({ matches }: { matches: Match[] }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 + 0.2, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="card"
-            style={{ padding:12, display:"flex", flexDirection:"column", gap:6 }}
+            style={{ padding: 12, display: "flex", flexDirection: "column", gap: 6 }}
           >
-            <div className="flex items-center justify-between">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span className="badge badge-accent">{m.group}</span>
-              <span className="text-xs" style={{ color:"var(--text-faint)" }}>
+              <span style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>
                 {dateLabel} · {timeLabel}
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="sport text-base flex-1" style={{ color:"var(--foreground)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="sport" style={{ fontSize: "1rem", flex: 1, color: "var(--foreground)" }}>
                 {m.home_team}
               </span>
-              <span className="text-xs" style={{ color:"var(--text-faint)", flexShrink:0 }}>vs</span>
-              <span className="sport text-base flex-1 text-right" style={{ color:"var(--foreground)" }}>
+              <span style={{ fontSize: "0.75rem", color: "var(--text-faint)", flexShrink: 0 }}>vs</span>
+              <span className="sport" style={{ fontSize: "1rem", flex: 1, textAlign: "right", color: "var(--foreground)" }}>
                 {m.away_team}
               </span>
             </div>
