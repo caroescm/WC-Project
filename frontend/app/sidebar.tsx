@@ -54,11 +54,11 @@ export default function Sidebar() {
       }}>
         <Link href="/" style={{ textDecoration: 'none' }}>
           {collapsed ? (
-            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent)', letterSpacing: '-0.02em' }}>FO</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: '#ffffff', letterSpacing: '-0.02em' }}>FO</span>
           ) : (
             <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em' }}>
-              <span style={{ color: 'var(--accent)' }}>Football</span>
-              <span style={{ color: '#ffffff' }}> Odds</span>
+              <span style={{ color: '#ffffff' }}>Football</span>
+              <span style={{ color: 'rgba(255,255,255,0.4)' }}> Odds</span>
             </span>
           )}
         </Link>

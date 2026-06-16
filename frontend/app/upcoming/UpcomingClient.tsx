@@ -122,7 +122,7 @@ function MatchCard({ fixture }: { fixture: Fixture }) {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span className="badge badge-accent">{fixture.group}</span>
           {upset && (
-            <span className="badge" style={{ background: "rgba(249,115,22,0.1)", color: "#f97316" }}>
+            <span className="badge" style={{ background: "var(--risk-dim)", color: "var(--risk)" }}>
               Upset Alert
             </span>
           )}

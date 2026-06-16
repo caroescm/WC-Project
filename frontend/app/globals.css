@@ -1,23 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --bg-page:       #edeff2;
+  --bg-page:       #ebebea;    /* warm stone — editorial, not cold digital */
   --bg-sidebar:    #0e1420;
 
   --foreground:    #0e1420;
   --text-muted:    #6b7280;
   --text-faint:    #9ca3af;
 
-  --accent:        #3b82f6;
-  --accent-light:  #eff6ff;
-  --accent-dim:    rgba(59, 130, 246, 0.08);
+  --accent:        #3730a3;    /* deep indigo — analytical authority */
+  --accent-light:  #eef2ff;
+  --accent-dim:    rgba(55, 48, 163, 0.08);
 
-  --positive:      #059669;
-  --positive-dim:  rgba(5, 150, 105, 0.08);
-  --negative:      #ef4444;
-  --negative-dim:  rgba(239, 68, 68, 0.08);
+  --positive:      #065f46;    /* forest emerald — over-performance */
+  --positive-dim:  rgba(6, 95, 70, 0.08);
 
-  --border:        #e2e5ea;
+  --negative:      #b0182a;    /* wine crimson — under-performance */
+  --negative-dim:  rgba(176, 24, 42, 0.08);
+
+  --risk:          #92400e;    /* amber-brown — upset risk, uncertainty */
+  --risk-dim:      rgba(146, 64, 14, 0.08);
+
+  --border:        #e0dedd;    /* slightly warmer */
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -165,9 +169,9 @@ table {
 }
 
 .sidebar-link.active {
-  color: var(--accent);
-  background: var(--accent-dim);
-  border-left-color: var(--accent);
+  color: #a5b4fc;                        /* indigo-300 — readable on dark sidebar */
+  background: rgba(99, 102, 241, 0.14);
+  border-left-color: #a5b4fc;
   font-weight: 500;
 }
 
