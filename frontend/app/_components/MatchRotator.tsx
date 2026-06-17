@@ -32,72 +32,86 @@ function actualOutcome(hs: number, as_: number): "HOME_WIN" | "DRAW" | "AWAY_WIN
 }
 
 /* ── Upcoming row ── */
-function UpcomingRow({ f, last }: { f: Fixture; last: boolean }) {
+function UpcomingRow({ f, index, last }: { f: Fixture; index: number; last: boolean }) {
   const maxP = Math.max(f.prediction.HOME_WIN, f.prediction.DRAW, f.prediction.AWAY_WIN);
   const h = (f.prediction.HOME_WIN * 100).toFixed(0);
-  const d = (f.prediction.DRAW    * 100).toFixed(0);
+  const d = (f.prediction.DRAW     * 100).toFixed(0);
   const a = (f.prediction.AWAY_WIN * 100).toFixed(0);
+  const group = (f.group || "KO").replace("Group ", "");
   return (
-    <div style={{
-      padding: "11px 0",
-      borderBottom: last ? "none" : "1px solid var(--border)",
-      display: "flex", alignItems: "center", gap: 12,
-    }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 1, flexShrink: 0, width: 36 }}>
-        <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: "var(--text-faint)" }}>{f.group || "KO"}</span>
-        <span style={{ fontSize: "0.6875rem", color: "var(--text-faint)" }}>{f.date.split(" ")[0]}</span>
+    <div style={{ padding: "8px 0", borderBottom: last ? "none" : "1px solid var(--border)" }}>
+      <div style={{ fontSize: "0.5625rem", fontWeight: 700, color: "var(--text-faint)", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 3 }}>
+        Group {group} · Match {index + 1} of 3
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: "0.875rem", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {f.home_team} <span style={{ color: "var(--text-faint)", fontWeight: 400 }}>vs</span> {f.away_team}
-        </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{ flex: 1, fontSize: "0.875rem", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {f.home_team}
+        </span>
+        <span style={{ fontSize: "0.6875rem", color: "var(--text-faint)", flexShrink: 0 }}>vs</span>
+        <span style={{ flex: 1, fontSize: "0.875rem", fontWeight: 600, textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {f.away_team}
+        </span>
       </div>
-      <span style={{ fontSize: "0.75rem", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
-        <span style={{ color: f.prediction.HOME_WIN === maxP ? "var(--accent)" : "var(--text-faint)", fontWeight: f.prediction.HOME_WIN === maxP ? 600 : 400 }}>H {h}%</span>
-        <span style={{ color: "var(--text-faint)" }}> · </span>
-        <span style={{ color: f.prediction.DRAW    === maxP ? "var(--accent)" : "var(--text-faint)", fontWeight: f.prediction.DRAW    === maxP ? 600 : 400 }}>D {d}%</span>
-        <span style={{ color: "var(--text-faint)" }}> · </span>
-        <span style={{ color: f.prediction.AWAY_WIN === maxP ? "var(--accent)" : "var(--text-faint)", fontWeight: f.prediction.AWAY_WIN === maxP ? 600 : 400 }}>A {a}%</span>
-      </span>
+      <div style={{ display: "flex", alignItems: "center", marginTop: 2 }}>
+        <span style={{ flex: 1, fontSize: "0.6875rem", fontWeight: f.prediction.HOME_WIN === maxP ? 700 : 400, color: f.prediction.HOME_WIN === maxP ? "var(--accent)" : "var(--text-faint)" }}>
+          {h}%
+        </span>
+        <span style={{ fontSize: "0.6875rem", fontWeight: f.prediction.DRAW === maxP ? 700 : 400, color: f.prediction.DRAW === maxP ? "var(--accent)" : "var(--text-faint)", flexShrink: 0 }}>
+          Draw {d}%
+        </span>
+        <span style={{ flex: 1, fontSize: "0.6875rem", fontWeight: f.prediction.AWAY_WIN === maxP ? 700 : 400, color: f.prediction.AWAY_WIN === maxP ? "var(--accent)" : "var(--text-faint)", textAlign: "right" }}>
+          {a}%
+        </span>
+      </div>
     </div>
   );
 }
 
 /* ── Archive row ── */
-function ArchiveRow({ f, last }: { f: Fixture; last: boolean }) {
-  const parsed   = f.result ? parseResult(f.result) : null;
-  const correct  = parsed
+function ArchiveRow({ f, index, last }: { f: Fixture; index: number; last: boolean }) {
+  const parsed  = f.result ? parseResult(f.result) : null;
+  const correct = parsed
     ? actualOutcome(parsed[0], parsed[1]) === predictionOutcome(f.prediction)
     : null;
-
+  const h = (f.prediction.HOME_WIN * 100).toFixed(0);
+  const d = (f.prediction.DRAW     * 100).toFixed(0);
+  const a = (f.prediction.AWAY_WIN * 100).toFixed(0);
+  const maxP = Math.max(f.prediction.HOME_WIN, f.prediction.DRAW, f.prediction.AWAY_WIN);
+  const group = (f.group || "KO").replace("Group ", "");
   return (
-    <div style={{
-      padding: "11px 0",
-      borderBottom: last ? "none" : "1px solid var(--border)",
-      display: "flex", alignItems: "center", gap: 12,
-    }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 1, flexShrink: 0, width: 36 }}>
-        <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: "var(--text-faint)" }}>{f.group || "KO"}</span>
-        <span style={{ fontSize: "0.6875rem", color: "var(--text-faint)" }}>{f.date.split(" ")[0]}</span>
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: "0.875rem", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {f.home_team} <span style={{ color: "var(--text-faint)", fontWeight: 400 }}>vs</span> {f.away_team}
-        </div>
-        {f.result && (
-          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: 2, fontVariantNumeric: "tabular-nums" }}>
-            {f.result}
-          </div>
+    <div style={{ padding: "8px 0", borderBottom: last ? "none" : "1px solid var(--border)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+        <span style={{ fontSize: "0.5625rem", fontWeight: 700, color: "var(--text-faint)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+          Group {group} · Match {index + 1} of 3
+        </span>
+        {correct !== null && (
+          <span style={{ fontSize: "0.6rem", fontWeight: 700, color: correct ? "var(--positive)" : "var(--negative)" }}>
+            {correct ? "✓ Correct" : "✗ Wrong"}
+          </span>
         )}
       </div>
-      {correct !== null && (
-        <span style={{
-          fontSize: "0.6875rem", fontWeight: 700, flexShrink: 0,
-          color: correct ? "var(--positive)" : "var(--negative)",
-        }}>
-          {correct ? "✓" : "✗"}
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{ flex: 1, fontSize: "0.875rem", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {f.home_team}
         </span>
-      )}
+        <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--foreground)", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
+          {f.result ?? "—"}
+        </span>
+        <span style={{ flex: 1, fontSize: "0.875rem", fontWeight: 600, textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {f.away_team}
+        </span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", marginTop: 2 }}>
+        <span style={{ flex: 1, fontSize: "0.6875rem", fontWeight: f.prediction.HOME_WIN === maxP ? 700 : 400, color: f.prediction.HOME_WIN === maxP ? "var(--accent)" : "var(--text-faint)" }}>
+          {h}%
+        </span>
+        <span style={{ fontSize: "0.6875rem", fontWeight: f.prediction.DRAW === maxP ? 700 : 400, color: f.prediction.DRAW === maxP ? "var(--accent)" : "var(--text-faint)", flexShrink: 0 }}>
+          Draw {d}%
+        </span>
+        <span style={{ flex: 1, fontSize: "0.6875rem", fontWeight: f.prediction.AWAY_WIN === maxP ? 700 : 400, color: f.prediction.AWAY_WIN === maxP ? "var(--accent)" : "var(--text-faint)", textAlign: "right" }}>
+          {a}%
+        </span>
+      </div>
     </div>
   );
 }
@@ -140,8 +154,8 @@ export default function MatchRotator({
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
 
       {/* ── Upcoming panel ── */}
-      <div className="card" style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 0 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+      <div className="card" style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 0 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <span style={{ fontSize: "0.6875rem", fontWeight: 700, color: "var(--text-faint)", letterSpacing: "0.07em", textTransform: "uppercase" }}>
             Upcoming
           </span>
@@ -151,14 +165,14 @@ export default function MatchRotator({
           {upSlice.length === 0 ? (
             <p style={{ fontSize: "0.8125rem", color: "var(--text-faint)", margin: 0 }}>No upcoming fixtures.</p>
           ) : upSlice.map((f, i) => (
-            <UpcomingRow key={f.match_number} f={f} last={i === upSlice.length - 1} />
+            <UpcomingRow key={f.match_number} f={f} index={i} last={i === upSlice.length - 1} />
           ))}
         </div>
       </div>
 
       {/* ── Archive panel ── */}
-      <div className="card" style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 0 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+      <div className="card" style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 0 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <span style={{ fontSize: "0.6875rem", fontWeight: 700, color: "var(--text-faint)", letterSpacing: "0.07em", textTransform: "uppercase" }}>
             Results
           </span>
@@ -168,7 +182,7 @@ export default function MatchRotator({
           {plSlice.length === 0 ? (
             <p style={{ fontSize: "0.8125rem", color: "var(--text-faint)", margin: 0 }}>No results yet.</p>
           ) : plSlice.map((f, i) => (
-            <ArchiveRow key={f.match_number} f={f} last={i === plSlice.length - 1} />
+            <ArchiveRow key={f.match_number} f={f} index={i} last={i === plSlice.length - 1} />
           ))}
         </div>
       </div>
