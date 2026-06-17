@@ -20,7 +20,7 @@ const BAR_COLORS = {
   sf:     "#a5b4fc",
 };
 
-const CHART_H = 180;
+const CHART_H = 210;
 
 export default function TournamentOutlook({ simulation }: { simulation: Record<string, SimEntry> }) {
   const [tooltip,   setTooltip] = useState<Tooltip | null>(null);

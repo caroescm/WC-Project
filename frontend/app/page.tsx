@@ -1,5 +1,7 @@
 import Link from "next/link";
 import TournamentOutlook from "./_components/TournamentOutlook";
+import PerformanceAnalysis from "./_components/PerformanceAnalysis";
+import MatchdaysCard from "./_components/MatchdaysCard";
 
 interface Prediction {
   HOME_WIN: number; DRAW: number; AWAY_WIN: number;
@@ -25,7 +27,9 @@ function deriveStats(played: Fixture[]) {
   let correct = 0, homeWins = 0;
   const drawMatches: { prob: number }[] = [];
   const upsets: { team: string; prob: number; score: string; home: string; away: string }[] = [];
-  const xgDelta: Record<string, number> = {};
+  const xgDelta:   Record<string, number> = {};
+  const teamXG:    Record<string, number> = {};
+  const teamGoals: Record<string, number> = {};
   for (const f of played) {
     const parsed = parseResult(f.result!);
     if (!parsed) continue;
@@ -37,8 +41,12 @@ function deriveStats(played: Fixture[]) {
     if (best === actual) correct++;
     if (hs > as_) homeWins++;
     if (actual === "DRAW") drawMatches.push({ prob: DRAW });
-    xgDelta[f.home_team] = (xgDelta[f.home_team] ?? 0) + (hs  - home_xg);
-    xgDelta[f.away_team] = (xgDelta[f.away_team] ?? 0) + (as_ - away_xg);
+    xgDelta[f.home_team]  = (xgDelta[f.home_team]  ?? 0) + (hs  - home_xg);
+    xgDelta[f.away_team]  = (xgDelta[f.away_team]  ?? 0) + (as_ - away_xg);
+    teamXG[f.home_team]   = (teamXG[f.home_team]   ?? 0) + home_xg;
+    teamXG[f.away_team]   = (teamXG[f.away_team]   ?? 0) + away_xg;
+    teamGoals[f.home_team] = (teamGoals[f.home_team] ?? 0) + hs;
+    teamGoals[f.away_team] = (teamGoals[f.away_team] ?? 0) + as_;
     const winnerTeam = hs > as_ ? f.home_team : as_ > hs ? f.away_team : null;
     const winnerProb = hs > as_ ? HOME_WIN    : as_ > hs ? AWAY_WIN    : null;
     if (winnerTeam && winnerProb !== null)
@@ -48,7 +56,7 @@ function deriveStats(played: Fixture[]) {
     ? drawMatches.reduce((s, d) => s + d.prob, 0) / drawMatches.length : 0;
   upsets.sort((a, b) => a.prob - b.prob);
   return { correct, total: played.length, baseline: homeWins / played.length,
-           avgDrawProb, drawCount: drawMatches.length, upsets, xgDelta };
+           avgDrawProb, drawCount: drawMatches.length, upsets, xgDelta, teamXG, teamGoals };
 }
 
 function groupProgress(fixtures: Fixture[]) {
@@ -187,6 +195,10 @@ export default async function Home() {
   const upcoming = fixtures.filter(f => f.result === null);
   const stats    = deriveStats(played);
 
+  const tournamentStart = new Date("2026-06-11");
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const daysElapsed = Math.min(39, Math.max(0, Math.round((today.getTime() - tournamentStart.getTime()) / 86400000) + 1));
+
   const simRanked = Object.entries(simulation).sort(([,a],[,b]) => b.winner - a.winner);
   const [topTeam, topEntry] = simRanked[0] ?? ["—", null];
   const second    = simRanked[1] ?? null;
@@ -253,162 +265,162 @@ export default async function Home() {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:24 }}>
 
-      {/* ── 1. HERO INSIGHT ────────────────────────────────────── */}
-      <div style={{ padding:"40px 48px", display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:40, background:"#ffffff", borderRadius:8 }}>
-        <div style={{ flex:1, display:"flex", flexDirection:"column", gap:16, minWidth:0 }}>
-          <span style={{ fontSize:"0.6875rem", fontWeight:700, color:"var(--text-faint)", letterSpacing:"0.07em", textTransform:"uppercase" }}>
-            Model Conclusion
-          </span>
-          <h1 className="sport" style={{ fontSize:"2.75rem", lineHeight:1.05, margin:0 }}>
-            {heroConclusion}
-          </h1>
-          <Insight>{heroDetail}</Insight>
-        </div>
+      {/* ── 1. MATCHDAYS + MODEL SNAPSHOT ──────────────────────── */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 2fr", gap:24, alignItems:"start" }}>
 
-        <div style={{ display:"flex", flexDirection:"column", gap:14, flexShrink:0, alignItems:"flex-end" }}>
+        {/* Model snapshot — right 1fr */}
+        <div className="card" style={{ padding:"24px 28px", display:"flex", flexDirection:"column", justifyContent:"center", gap:20 }}>
           {topEntry && (
-            <div style={{ textAlign:"right" }}>
-              <div className="sport" style={{ fontSize:"3rem", color:"var(--accent)", lineHeight:1 }}>
+            <div>
+              <div style={{ fontSize:"0.6875rem", fontWeight:700, color:"var(--text-faint)", letterSpacing:"0.07em", textTransform:"uppercase", marginBottom:8 }}>
+                Tournament Favorite
+              </div>
+              <div className="sport" style={{ fontSize:"2.5rem", color:"var(--accent)", lineHeight:1 }}>
                 {(topEntry.winner * 100).toFixed(1)}%
               </div>
-              <div style={{ fontSize:"0.75rem", color:"var(--text-faint)", marginTop:2 }}>
+              <div style={{ fontSize:"0.8125rem", color:"var(--text-muted)", marginTop:4 }}>
                 {topTeam} to win
               </div>
+              {second && (
+                <div style={{ fontSize:"0.75rem", color:"var(--text-faint)", marginTop:6 }}>
+                  {second[0]} {(second[1].winner * 100).toFixed(1)}%
+                </div>
+              )}
             </div>
           )}
           {stats && (
-            <div style={{ textAlign:"right" }}>
-              <div className="sport" style={{ fontSize:"1.375rem", lineHeight:1 }}>
+            <div>
+              <div style={{ fontSize:"0.6875rem", fontWeight:700, color:"var(--text-faint)", letterSpacing:"0.07em", textTransform:"uppercase", marginBottom:8 }}>
+                Model Accuracy
+              </div>
+              <div className="sport" style={{ fontSize:"2.5rem", lineHeight:1 }}>
                 {(stats.correct / stats.total * 100).toFixed(0)}%
               </div>
-              <div style={{ fontSize:"0.75rem", color:"var(--text-faint)", marginTop:2 }}>
-                model accuracy
+              <div style={{ fontSize:"0.75rem", color:"var(--text-faint)", marginTop:4 }}>
+                {stats.correct} of {stats.total} correct
               </div>
             </div>
           )}
         </div>
+
+        <MatchdaysCard matchesPlayed={played.length} daysElapsed={daysElapsed} />
       </div>
 
       {/* ── 2. TOURNAMENT OUTLOOK ──────────────────────────────── */}
       <TournamentOutlook simulation={simulation} />
 
-      {/* ── 3. KEY CHANGES + UPCOMING MATCHES ──────────────────── */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 2fr", gap:20 }}>
+      {/* ── 3. PERFORMANCE ANALYSIS + KEY CHANGES ──────────────── */}
+      <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:20, alignItems:"stretch" }}>
 
-        {/* Key Changes */}
-        <div>
-          <SectionLabel text="Key Changes" href="/performance" linkLabel="Full xG report →" />
-          <div style={{ display:"flex", flexDirection:"column", gap:20 }}>
-            {xgEntries.length === 0 ? (
-              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                {upcomingXgPeak ? (
-                  <>
-                    <div style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--text-faint)", letterSpacing:"0.05em", textTransform:"uppercase" }}>
-                      Opening Round Watch
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline" }}>
-                      <span style={{ fontSize:"0.9375rem", fontWeight:600 }}>{upcomingXgPeak.team}</span>
-                      <span style={{ fontSize:"1.125rem", fontWeight:700, color:"var(--accent)" }}>
-                        {upcomingXgPeak.xg.toFixed(2)} xG
-                      </span>
-                    </div>
-                    <Insight>
-                      Highest projected attack in the opening round — {upcomingXgPeak.xg.toFixed(2)} expected goals vs {upcomingXgPeak.opp}.
-                    </Insight>
-                  </>
-                ) : (
-                  <span style={{ fontSize:"0.8125rem", color:"var(--text-faint)" }}>Awaiting first tournament results.</span>
-                )}
-              </div>
-            ) : (
+        {/* Dumbbell chart */}
+        <PerformanceAnalysis
+          teamXG={stats?.teamXG ?? {}}
+          teamGoals={stats?.teamGoals ?? {}}
+        />
+
+        {/* Key Changes — 3 separate cards stacked */}
+        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+
+          {/* Outperforming */}
+          <div className="card" style={{ padding:"16px 20px", flex:1 }}>
+            <div style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--positive)", letterSpacing:"0.05em", textTransform:"uppercase", marginBottom:8 }}>
+              Outperforming
+            </div>
+            {xgOver ? (
               <>
-                {xgOver && (
-                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                    <div style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--positive)", letterSpacing:"0.05em", textTransform:"uppercase" }}>
-                      Outperforming
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline" }}>
-                      <span style={{ fontSize:"0.9375rem", fontWeight:600 }}>{xgOver[0]}</span>
-                      <span style={{ fontSize:"1.125rem", fontWeight:700, color:"var(--positive)" }}>+{xgOver[1].toFixed(1)} goals</span>
-                    </div>
-                    {xgOverInsight(xgOver[0], xgOver[1]) && <Insight>{xgOverInsight(xgOver[0], xgOver[1])}</Insight>}
-                  </div>
-                )}
-                {xgUnder && (
-                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                    <div style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--negative)", letterSpacing:"0.05em", textTransform:"uppercase" }}>
-                      Underperforming
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline" }}>
-                      <span style={{ fontSize:"0.9375rem", fontWeight:600 }}>{xgUnder[0]}</span>
-                      <span style={{ fontSize:"1.125rem", fontWeight:700, color:"var(--negative)" }}>{xgUnder[1].toFixed(1)} goals</span>
-                    </div>
-                    {xgUnderInsight(xgUnder[0], xgUnder[1]) && <Insight>{xgUnderInsight(xgUnder[0], xgUnder[1])}</Insight>}
-                  </div>
-                )}
-                {upsetT && (
-                  <>
-                    <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                      <div style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--text-faint)", letterSpacing:"0.05em", textTransform:"uppercase" }}>
-                        Biggest Upset
-                      </div>
-                      <div style={{ fontSize:"0.875rem", fontWeight:500 }}>
-                        {upsetT.home} {upsetT.score} {upsetT.away}
-                      </div>
-                      <span style={{ fontSize:"0.75rem", color:"var(--negative)" }}>
-                        winner at {(upsetT.prob * 100).toFixed(1)}% odds
-                      </span>
-                      {upsetInsight(upsetT) && <Insight>{upsetInsight(upsetT)}</Insight>}
-                    </div>
-                  </>
-                )}
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline" }}>
+                  <span style={{ fontSize:"0.9375rem", fontWeight:600 }}>{xgOver[0]}</span>
+                  <span style={{ fontSize:"1.125rem", fontWeight:700, color:"var(--positive)" }}>+{xgOver[1].toFixed(1)} goals</span>
+                </div>
+                {xgOverInsight(xgOver[0], xgOver[1]) && <Insight>{xgOverInsight(xgOver[0], xgOver[1])}</Insight>}
               </>
+            ) : (
+              <span style={{ fontSize:"0.8125rem", color:"var(--text-faint)" }}>Awaiting results.</span>
             )}
           </div>
-        </div>
 
-        {/* Upcoming Matches */}
-        <div>
-          <SectionLabel text="Upcoming" href="/upcoming" linkLabel="All fixtures →" />
-          <div style={{ display:"flex", flexDirection:"column" }}>
-            {upcoming.length === 0 ? (
-              <div className="empty">All group stage fixtures are complete.</div>
-            ) : upcoming.slice(0, 5).map((f, idx) => {
-              const maxP   = Math.max(f.prediction.HOME_WIN, f.prediction.DRAW, f.prediction.AWAY_WIN);
-              const isLast = idx === Math.min(upcoming.length, 5) - 1;
-              const note   = matchAnnotation(f);
-              const h = (f.prediction.HOME_WIN * 100).toFixed(0);
-              const d = (f.prediction.DRAW * 100).toFixed(0);
-              const a = (f.prediction.AWAY_WIN * 100).toFixed(0);
-              return (
-                <div key={f.match_number} style={{
-                  padding:"11px 0",
-                  borderBottom: isLast ? "none" : "1px solid var(--border)",
-                  display:"flex", flexDirection:"column", gap:6,
-                }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-                    <div style={{ display:"flex", flexDirection:"column", gap:1, flexShrink:0, width:36 }}>
-                      <span style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--text-faint)" }}>{f.group || "KO"}</span>
-                      <span style={{ fontSize:"0.6875rem", color:"var(--text-faint)" }}>{f.date.split(" ")[0]}</span>
-                    </div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:"0.875rem", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                        {f.home_team} <span style={{ color:"var(--text-faint)", fontWeight:400 }}>vs</span> {f.away_team}
-                      </div>
-                    </div>
-                    <span style={{ fontSize:"0.75rem", color:"var(--text-faint)", flexShrink:0, fontVariantNumeric:"tabular-nums" }}>
-                      <span style={{ color: f.prediction.HOME_WIN === maxP ? "var(--accent)" : "var(--text-faint)", fontWeight: f.prediction.HOME_WIN === maxP ? 600 : 400 }}>H {h}%</span>
-                      {" · "}
-                      <span style={{ color: f.prediction.DRAW === maxP ? "var(--accent)" : "var(--text-faint)", fontWeight: f.prediction.DRAW === maxP ? 600 : 400 }}>D {d}%</span>
-                      {" · "}
-                      <span style={{ color: f.prediction.AWAY_WIN === maxP ? "var(--accent)" : "var(--text-faint)", fontWeight: f.prediction.AWAY_WIN === maxP ? 600 : 400 }}>A {a}%</span>
-                    </span>
-                  </div>
-                  {note && <Insight>{note}</Insight>}
+          {/* Underperforming */}
+          <div className="card" style={{ padding:"16px 20px", flex:1 }}>
+            <div style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--negative)", letterSpacing:"0.05em", textTransform:"uppercase", marginBottom:8 }}>
+              Underperforming
+            </div>
+            {xgUnder ? (
+              <>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline" }}>
+                  <span style={{ fontSize:"0.9375rem", fontWeight:600 }}>{xgUnder[0]}</span>
+                  <span style={{ fontSize:"1.125rem", fontWeight:700, color:"var(--negative)" }}>{xgUnder[1].toFixed(1)} goals</span>
                 </div>
-              );
-            })}
+                {xgUnderInsight(xgUnder[0], xgUnder[1]) && <Insight>{xgUnderInsight(xgUnder[0], xgUnder[1])}</Insight>}
+              </>
+            ) : (
+              <span style={{ fontSize:"0.8125rem", color:"var(--text-faint)" }}>Awaiting results.</span>
+            )}
           </div>
+
+          {/* Biggest Upset */}
+          <div className="card" style={{ padding:"16px 20px", flex:1 }}>
+            <div style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--text-faint)", letterSpacing:"0.05em", textTransform:"uppercase", marginBottom:8 }}>
+              Biggest Upset
+            </div>
+            {upsetT ? (
+              <>
+                <div style={{ fontSize:"0.875rem", fontWeight:500, marginBottom:4 }}>
+                  {upsetT.home} {upsetT.score} {upsetT.away}
+                </div>
+                <span style={{ fontSize:"0.75rem", color:"var(--negative)" }}>
+                  winner at {(upsetT.prob * 100).toFixed(1)}% odds
+                </span>
+                {upsetInsight(upsetT) && <Insight>{upsetInsight(upsetT)}</Insight>}
+              </>
+            ) : (
+              <span style={{ fontSize:"0.8125rem", color:"var(--text-faint)" }}>Awaiting results.</span>
+            )}
+          </div>
+
+        </div>
+      </div>
+
+      {/* ── 4. UPCOMING MATCHES ────────────────────────────────── */}
+      <div>
+        <SectionLabel text="Upcoming" href="/upcoming" linkLabel="All fixtures →" />
+        <div className="card" style={{ padding:"0 20px" }}>
+          {upcoming.length === 0 ? (
+            <div className="empty" style={{ padding:"16px 0" }}>All group stage fixtures are complete.</div>
+          ) : upcoming.slice(0, 5).map((f, idx) => {
+            const maxP   = Math.max(f.prediction.HOME_WIN, f.prediction.DRAW, f.prediction.AWAY_WIN);
+            const isLast = idx === Math.min(upcoming.length, 5) - 1;
+            const note   = matchAnnotation(f);
+            const h = (f.prediction.HOME_WIN * 100).toFixed(0);
+            const d = (f.prediction.DRAW * 100).toFixed(0);
+            const a = (f.prediction.AWAY_WIN * 100).toFixed(0);
+            return (
+              <div key={f.match_number} style={{
+                padding:"11px 0",
+                borderBottom: isLast ? "none" : "1px solid var(--border)",
+                display:"flex", flexDirection:"column", gap:6,
+              }}>
+                <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+                  <div style={{ display:"flex", flexDirection:"column", gap:1, flexShrink:0, width:36 }}>
+                    <span style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--text-faint)" }}>{f.group || "KO"}</span>
+                    <span style={{ fontSize:"0.6875rem", color:"var(--text-faint)" }}>{f.date.split(" ")[0]}</span>
+                  </div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:"0.875rem", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                      {f.home_team} <span style={{ color:"var(--text-faint)", fontWeight:400 }}>vs</span> {f.away_team}
+                    </div>
+                  </div>
+                  <span style={{ fontSize:"0.75rem", color:"var(--text-faint)", flexShrink:0, fontVariantNumeric:"tabular-nums" }}>
+                    <span style={{ color: f.prediction.HOME_WIN === maxP ? "var(--accent)" : "var(--text-faint)", fontWeight: f.prediction.HOME_WIN === maxP ? 600 : 400 }}>H {h}%</span>
+                    {" · "}
+                    <span style={{ color: f.prediction.DRAW === maxP ? "var(--accent)" : "var(--text-faint)", fontWeight: f.prediction.DRAW === maxP ? 600 : 400 }}>D {d}%</span>
+                    {" · "}
+                    <span style={{ color: f.prediction.AWAY_WIN === maxP ? "var(--accent)" : "var(--text-faint)", fontWeight: f.prediction.AWAY_WIN === maxP ? 600 : 400 }}>A {a}%</span>
+                  </span>
+                </div>
+                {note && <Insight>{note}</Insight>}
+              </div>
+            );
+          })}
         </div>
       </div>
 
