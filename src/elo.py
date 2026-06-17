@@ -76,7 +76,7 @@ def register_result(match_number: int, home_score: int, away_score: int):
         raise ValueError(f"Match {match_number} not found")
 
     row = fixtures[mask].iloc[0]
-    from config import name_map
+    from .config import name_map
     home_team = name_map.get(row["Home Team"], row["Home Team"])
     away_team = name_map.get(row["Away Team"], row["Away Team"])
 
@@ -107,7 +107,8 @@ def register_result(match_number: int, home_score: int, away_score: int):
     elo_current.loc[elo_current["team"] == away_team, "elo"] = new_away_elo
     elo_current.to_csv(elo_path, index=False)
 
-    # Update result in fixtures
+    # Update result in fixtures (cast to object first so string assignment works on an all-null column)
+    fixtures["Result"] = fixtures["Result"].astype(object)
     fixtures.loc[mask, "Result"] = f"{home_score} - {away_score}"
     fixtures.to_csv(fixtures_path, index=False)
 
