@@ -1,4 +1,5 @@
 import Link from "next/link";
+import TournamentOutlook from "./_components/TournamentOutlook";
 
 interface Prediction {
   HOME_WIN: number; DRAW: number; AWAY_WIN: number;
@@ -187,7 +188,6 @@ export default async function Home() {
   const stats    = deriveStats(played);
 
   const simRanked = Object.entries(simulation).sort(([,a],[,b]) => b.winner - a.winner);
-  const maxWinner = simRanked[0]?.[1].winner ?? 1;
   const [topTeam, topEntry] = simRanked[0] ?? ["—", null];
   const second    = simRanked[1] ?? null;
 
@@ -290,64 +290,7 @@ export default async function Home() {
       </div>
 
       {/* ── 2. TOURNAMENT OUTLOOK ──────────────────────────────── */}
-      <div>
-        <SectionLabel text="Tournament Outlook" href="/montecarlo" linkLabel="Full simulation →" />
-        <div style={{ display:"flex", flexDirection:"column" }}>
-          {simRanked.length === 0 ? (
-            <div className="empty">Simulation unavailable</div>
-          ) : (
-            <>
-              {/* Field-level insight before the rows */}
-              {fieldInsight(simRanked) && (
-                <div style={{ paddingBottom:12 }}>
-                  <Insight>{fieldInsight(simRanked)}</Insight>
-                </div>
-              )}
-              {simRanked.slice(0, 8).map(([team, p], i) => {
-                const isTop  = i < 3;
-                const barPct = (p.winner / maxWinner) * 100;
-                // Flag teams that reach the final far more than they win
-                const finalistNote = p.winner > 0.04 && p.final / p.winner > 2.6
-                  ? `reaches final ${(p.final * 100).toFixed(0)}% but wins only ${(p.winner * 100).toFixed(1)}%`
-                  : null;
-                return (
-                  <div key={team} style={{
-                    display:"flex", alignItems:"center", gap:12, padding:"9px 0",
-                    background: i === 0 ? "var(--accent-dim)" : "transparent",
-                    borderRadius: i === 0 ? 4 : 0,
-                  }}>
-                    <span style={{ width:18, fontSize:"0.6875rem", fontWeight:600, color:"var(--text-faint)", flexShrink:0, textAlign:"right" }}>
-                      {i + 1}
-                    </span>
-                    <div style={{ width:220, flexShrink:0, minWidth:0 }}>
-                      <div style={{ fontSize:"0.875rem", fontWeight: isTop ? 600 : 500, color: isTop ? "var(--foreground)" : "var(--text-muted)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                        {team}
-                      </div>
-                      {finalistNote && (
-                        <div style={{ fontSize:"0.6875rem", color:"var(--text-faint)", marginTop:2 }}>
-                          {finalistNote}
-                        </div>
-                      )}
-                    </div>
-                    <div className="bar-track" style={{ flex:1 }}>
-                      <div className="bar-fill" style={{ width:`${barPct}%`, background: isTop ? "var(--accent)" : "var(--border)" }} />
-                    </div>
-                    <span style={{ width:48, fontSize:"0.875rem", fontWeight:700, color: isTop ? "var(--accent)" : "var(--text-faint)", textAlign:"right", flexShrink:0 }}>
-                      {(p.winner * 100).toFixed(1)}%
-                    </span>
-                    <span style={{ width:56, fontSize:"0.75rem", color:"var(--text-faint)", textAlign:"right", flexShrink:0 }}>
-                      F {(p.final * 100).toFixed(0)}%
-                    </span>
-                    <span style={{ width:56, fontSize:"0.75rem", color:"var(--text-faint)", textAlign:"right", flexShrink:0 }}>
-                      SF {(p.sf * 100).toFixed(0)}%
-                    </span>
-                  </div>
-                );
-              })}
-            </>
-          )}
-        </div>
-      </div>
+      <TournamentOutlook simulation={simulation} />
 
       {/* ── 3. KEY CHANGES + UPCOMING MATCHES ──────────────────── */}
       <div style={{ display:"grid", gridTemplateColumns:"1fr 2fr", gap:20 }}>
