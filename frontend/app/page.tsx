@@ -2,6 +2,7 @@ import Link from "next/link";
 import TournamentOutlook from "./_components/TournamentOutlook";
 import PerformanceAnalysis from "./_components/PerformanceAnalysis";
 import MatchdaysCard from "./_components/MatchdaysCard";
+import MatchRotator from "./_components/MatchRotator";
 
 interface Prediction {
   HOME_WIN: number; DRAW: number; AWAY_WIN: number;
@@ -380,49 +381,8 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* ── 4. UPCOMING MATCHES ────────────────────────────────── */}
-      <div>
-        <SectionLabel text="Upcoming" href="/upcoming" linkLabel="All fixtures →" />
-        <div className="card" style={{ padding:"0 20px" }}>
-          {upcoming.length === 0 ? (
-            <div className="empty" style={{ padding:"16px 0" }}>All group stage fixtures are complete.</div>
-          ) : upcoming.slice(0, 5).map((f, idx) => {
-            const maxP   = Math.max(f.prediction.HOME_WIN, f.prediction.DRAW, f.prediction.AWAY_WIN);
-            const isLast = idx === Math.min(upcoming.length, 5) - 1;
-            const note   = matchAnnotation(f);
-            const h = (f.prediction.HOME_WIN * 100).toFixed(0);
-            const d = (f.prediction.DRAW * 100).toFixed(0);
-            const a = (f.prediction.AWAY_WIN * 100).toFixed(0);
-            return (
-              <div key={f.match_number} style={{
-                padding:"11px 0",
-                borderBottom: isLast ? "none" : "1px solid var(--border)",
-                display:"flex", flexDirection:"column", gap:6,
-              }}>
-                <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-                  <div style={{ display:"flex", flexDirection:"column", gap:1, flexShrink:0, width:36 }}>
-                    <span style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--text-faint)" }}>{f.group || "KO"}</span>
-                    <span style={{ fontSize:"0.6875rem", color:"var(--text-faint)" }}>{f.date.split(" ")[0]}</span>
-                  </div>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:"0.875rem", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                      {f.home_team} <span style={{ color:"var(--text-faint)", fontWeight:400 }}>vs</span> {f.away_team}
-                    </div>
-                  </div>
-                  <span style={{ fontSize:"0.75rem", color:"var(--text-faint)", flexShrink:0, fontVariantNumeric:"tabular-nums" }}>
-                    <span style={{ color: f.prediction.HOME_WIN === maxP ? "var(--accent)" : "var(--text-faint)", fontWeight: f.prediction.HOME_WIN === maxP ? 600 : 400 }}>H {h}%</span>
-                    {" · "}
-                    <span style={{ color: f.prediction.DRAW === maxP ? "var(--accent)" : "var(--text-faint)", fontWeight: f.prediction.DRAW === maxP ? 600 : 400 }}>D {d}%</span>
-                    {" · "}
-                    <span style={{ color: f.prediction.AWAY_WIN === maxP ? "var(--accent)" : "var(--text-faint)", fontWeight: f.prediction.AWAY_WIN === maxP ? 600 : 400 }}>A {a}%</span>
-                  </span>
-                </div>
-                {note && <Insight>{note}</Insight>}
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* ── 4. UPCOMING + RESULTS ──────────────────────────────── */}
+      <MatchRotator upcoming={upcoming} played={played} />
 
       {/* ── 4. PREDICTION ACCURACY ─────────────────────────────── */}
       <div>
