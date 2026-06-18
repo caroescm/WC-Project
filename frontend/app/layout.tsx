@@ -17,9 +17,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={dmSans.variable}>
-      <body style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+      <body style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "var(--bg-page)" }}>
         <Sidebar />
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8" style={{ background: "var(--bg-page)" }}>
+        <main style={{ flex: 1, paddingTop: 80, padding: "80px 24px 32px" }}>
           {children}
         </main>
       </body>
