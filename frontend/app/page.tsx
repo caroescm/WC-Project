@@ -266,6 +266,22 @@ export default async function Home() {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:24 }}>
 
+      {/* ── PAGE HEADER ────────────────────────────────────────── */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <h1 style={{ margin:0, fontSize:"1.75rem", fontWeight:800, letterSpacing:"-0.02em", color:"var(--foreground)" }}>
+          World Cup 2026
+        </h1>
+        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:"0.8125rem", color:"var(--text-muted)", background:"#ffffff", border:"1px solid var(--border)", borderRadius:8, padding:"6px 12px" }}>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="2.5" width="14" height="12.5" rx="2" stroke="currentColor" strokeWidth="1.4"/>
+            <path d="M1 6.5H15" stroke="currentColor" strokeWidth="1.4"/>
+            <path d="M5 1V4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            <path d="M11 1V4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+          </svg>
+          <span>June 11 – July 19</span>
+        </div>
+      </div>
+
       {/* ── 1. MATCHDAYS + MODEL SNAPSHOT ──────────────────────── */}
       <div style={{ display:"grid", gridTemplateColumns:"1fr 2fr", gap:24, alignItems:"start" }}>
 

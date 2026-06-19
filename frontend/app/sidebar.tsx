@@ -4,13 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const NAV = [
-  { href: '/',            label: 'Dashboard'   },
-  { href: '/upcoming',    label: 'Upcoming'    },
-  { href: '/montecarlo',  label: 'Monte Carlo' },
-  { href: '/accuracy',    label: 'Accuracy'    },
-  { href: '/performance', label: 'xG Perf.'    },
-  { href: '/upsets',      label: 'Upsets'      },
-  { href: '/archive',     label: 'Archive'     },
+  { href: '/',             label: 'Dashboard'   },
+  { href: '/predictions',  label: 'Predictions' },
+  { href: '/results',      label: 'Results'     },
+  { href: '/teams',        label: 'Teams'       },
+  { href: '/groups',       label: 'Groups'      },
 ];
 
 export default function Navbar() {
@@ -29,28 +27,36 @@ export default function Navbar() {
       <nav style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 0,
-        background: '#1a1628',
+        background: '#ffffff',
         borderRadius: 14,
-        padding: '0 8px',
-        height: 48,
-        boxShadow: '0 4px 24px rgba(0,0,0,0.28), 0 1px 0 rgba(255,255,255,0.06) inset',
-        border: '1px solid rgba(255,255,255,0.08)',
+        padding: '0 12px',
+        height: 52,
+        boxShadow: '0 2px 12px rgba(14, 20, 32, 0.08)',
+        border: '1px solid rgba(0,0,0,0.06)',
       }}>
         {/* Logo */}
         <Link href="/" style={{
           textDecoration: 'none',
-          padding: '0 14px 0 8px',
-          marginRight: 8,
-          borderRight: '1px solid rgba(255,255,255,0.08)',
+          padding: '0 16px 0 4px',
+          marginRight: 12,
+          borderRight: '1px solid #e9e6f4',
           height: '100%',
           display: 'flex',
           alignItems: 'center',
           flexShrink: 0,
+          gap: 7,
         }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="#1a1628" strokeWidth="1.8"/>
+            <path d="M12 2C12 2 8 7 8 12C8 17 12 22 12 22" stroke="#1a1628" strokeWidth="1.4" strokeLinecap="round"/>
+            <path d="M12 2C12 2 16 7 16 12C16 17 12 22 12 22" stroke="#1a1628" strokeWidth="1.4" strokeLinecap="round"/>
+            <path d="M2 12H22" stroke="#1a1628" strokeWidth="1.4" strokeLinecap="round"/>
+            <path d="M3.5 7H20.5" stroke="#1a1628" strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
+            <path d="M3.5 17H20.5" stroke="#1a1628" strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
+          </svg>
           <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em' }}>
-            <span style={{ color: '#ffffff' }}>Football</span>
-            <span style={{ color: 'rgba(255,255,255,0.35)' }}> Odds</span>
+            <span style={{ color: '#1a1628' }}>Football</span>
+            <span style={{ color: '#5b21b6' }}> Odds</span>
           </span>
         </Link>
 

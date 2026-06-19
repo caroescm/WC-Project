@@ -152,10 +152,10 @@ table {
 .nav-link {
   display: flex;
   align-items: center;
-  padding: 6px 12px;
+  padding: 6px 14px;
   text-decoration: none;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.45);
+  color: #6b6880;
   border-radius: 8px;
   transition: color 0.12s, background 0.12s;
   white-space: nowrap;
@@ -163,13 +163,13 @@ table {
 }
 
 .nav-link:hover {
-  color: rgba(255, 255, 255, 0.75);
-  background: rgba(255, 255, 255, 0.06);
+  color: #1a1628;
+  background: #f3f0fa;
 }
 
 .nav-link.active {
-  color: #c4b5fd;
-  background: rgba(139, 92, 246, 0.18);
+  color: #ffffff;
+  background: #1a1628;
   font-weight: 600;
 }
 
