@@ -50,9 +50,9 @@ export function AnimatedBar({ homeWin, draw, awayWin, homeTeam, awayTeam, compac
         </div>
       )}
 
-      <div style={{ position: "relative", width: "100%", borderRadius: 9999, overflow: "hidden", height: compact ? 6 : 8, background: "var(--border)" }}>
+      <div style={{ position: "relative", width: "100%", borderRadius: 0, overflow: "hidden", height: compact ? 6 : 8, background: "var(--border)" }}>
         <motion.div
-          style={{ position: "absolute", top: 0, bottom: 0, left: 0, borderRadius: 9999, background: gradient }}
+          style={{ position: "absolute", top: 0, bottom: 0, left: 0, borderRadius: 0, background: gradient }}
           initial={{ width: "0%" }}
           animate={{ width: "100%" }}
           transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}

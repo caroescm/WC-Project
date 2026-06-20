@@ -27,14 +27,14 @@ export default async function PredictionsPage() {
   const upcoming  = fixtures.filter(f => f.result === null);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 
       {/* Page header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <h1 style={{ margin: 0, fontSize: "1.75rem", fontWeight: 700, letterSpacing: "-0.02em", color: "var(--foreground)" }}>
           Predictions
         </h1>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.8125rem", color: "var(--text-muted)", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, padding: "6px 12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.8125rem", color: "var(--text-muted)", background: "#fff", border: "1px solid var(--border)", borderRadius: 0, padding: "6px 12px" }}>
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
             <rect x="1" y="2.5" width="14" height="12.5" rx="2" stroke="currentColor" strokeWidth="1.4"/>
             <path d="M1 6.5H15" stroke="currentColor" strokeWidth="1.4"/>
@@ -51,8 +51,8 @@ export default async function PredictionsPage() {
       {/* Full simulation table */}
       {ranked.length > 0 && (
         <div className="card table-wrap">
-          <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid var(--border)" }}>
-            <span style={{ fontSize: "1rem", fontWeight: 700, color: "#0e1420" }}>Full Simulation Table</span>
+          <div style={{ padding: "10px 14px 8px", borderBottom: "1px solid var(--border)" }}>
+            <span style={{ fontSize: "1rem", fontWeight: 400, color: "#0e1420" }}>Full Simulation Table</span>
             <span style={{ fontSize: "0.75rem", color: "var(--text-faint)", marginLeft: 10 }}>3,000 Monte Carlo rounds</span>
           </div>
           <table>
@@ -93,7 +93,7 @@ export default async function PredictionsPage() {
 
       {/* Upcoming matches */}
       <div>
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 8 }}>
           <span style={{ fontSize: "0.6875rem", fontWeight: 700, color: "var(--text-faint)", letterSpacing: "0.07em", textTransform: "uppercase" }}>
             Upcoming Matches — {upcoming.length} remaining
           </span>

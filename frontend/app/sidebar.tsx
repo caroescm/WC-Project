@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import ThemeToggle from './_components/ThemeToggle';
 
 const NAV = [
   { href: '/',             label: 'Dashboard'   },
@@ -54,9 +55,9 @@ export default function Navbar() {
         display: 'flex',
         alignItems: 'center',
         background: '#ffffff',
-        borderRadius: 999,
+        borderRadius: 0,
         border: '1px solid #DCE4DA',
-        boxShadow: '0 1px 6px rgba(16, 36, 26, 0.07)',
+        
         padding: '4px',
         gap: 2,
       }}>
@@ -74,8 +75,10 @@ export default function Navbar() {
         })}
       </nav>
 
-      {/* Right — empty spacer to keep pill centered */}
-      <div />
+      {/* Right — theme toggle */}
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <ThemeToggle />
+      </div>
     </div>
   );
 }

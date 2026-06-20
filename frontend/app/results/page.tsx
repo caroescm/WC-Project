@@ -18,7 +18,7 @@ function predictedOutcome(p: Prediction) {
 
 function MiniBar({ h, d, a }: { h: number; d: number; a: number }) {
   return (
-    <div style={{ display: "flex", height: 5, borderRadius: 3, overflow: "hidden", width: "100%" }}>
+    <div style={{ display: "flex", height: 5, borderRadius: 0, overflow: "hidden", width: "100%" }}>
       <div style={{ width: `${h}%`, background: "#1a1628" }} />
       <div style={{ width: `${d}%`, background: "#a78bfa" }} />
       <div style={{ width: `${a}%`, background: "#f472b6" }} />
@@ -67,14 +67,14 @@ export default async function ResultsPage() {
   });
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 
       {/* Page header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <h1 style={{ margin: 0, fontSize: "1.75rem", fontWeight: 700, letterSpacing: "-0.02em", color: "var(--foreground)" }}>
           Results
         </h1>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.8125rem", color: "var(--text-muted)", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, padding: "6px 12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.8125rem", color: "var(--text-muted)", background: "#fff", border: "1px solid var(--border)", borderRadius: 0, padding: "6px 12px" }}>
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
             <rect x="1" y="2.5" width="14" height="12.5" rx="2" stroke="currentColor" strokeWidth="1.4"/>
             <path d="M1 6.5H15" stroke="currentColor" strokeWidth="1.4"/>
@@ -92,9 +92,9 @@ export default async function ResultsPage() {
           { label: "vs Home-Win Baseline", value: delta !== null ? `${delta >= 0 ? "+" : ""}${delta.toFixed(1)} pts` : "—", sub: basePct ? `Baseline: ${basePct}%` : "Awaiting results", color: delta !== null ? (delta >= 0 ? "var(--positive)" : "var(--negative)") : "var(--foreground)" },
           { label: "Avg Draw Probability",  value: avgDraw ? `${avgDraw}%` : "—",  sub: drawProbs.length ? `${drawProbs.length} draws so far` : "No draws yet", color: "var(--foreground)" },
         ].map(s => (
-          <div key={s.label} style={{ background: "#fff", borderRadius: 12, padding: "20px 20px 16px", display: "flex", flexDirection: "column", minHeight: 90, boxShadow: "0 1px 3px rgba(14,20,32,0.06)" }}>
+          <div key={s.label} style={{ background: "#fff", borderRadius: 0, padding: "10px 14px 12px", display: "flex", flexDirection: "column", minHeight: 90 }}>
             <span style={{ fontSize: "0.625rem", fontWeight: 700, color: "var(--text-faint)", letterSpacing: "0.07em", textTransform: "uppercase" }}>{s.label}</span>
-            <span style={{ fontSize: "1.625rem", fontWeight: 700, color: s.color, letterSpacing: "-0.02em", lineHeight: 1, marginTop: 10 }}>{s.value}</span>
+            <span style={{ fontSize: "1.625rem", fontWeight: 400, color: s.color, letterSpacing: "-0.02em", lineHeight: 1, marginTop: 10, fontVariantNumeric: "tabular-nums" }}>{s.value}</span>
             <span style={{ fontSize: "0.6875rem", color: "var(--text-faint)", marginTop: "auto", paddingTop: 8 }}>{s.sub}</span>
           </div>
         ))}
@@ -105,8 +105,8 @@ export default async function ResultsPage() {
 
       {/* Archive table */}
       <div className="card table-wrap">
-        <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid var(--border)" }}>
-          <span style={{ fontSize: "1rem", fontWeight: 700, color: "#0e1420" }}>Match Archive</span>
+        <div style={{ padding: "10px 14px 8px", borderBottom: "1px solid var(--border)" }}>
+          <span style={{ fontSize: "1rem", fontWeight: 400, color: "#0e1420" }}>Match Archive</span>
           <span style={{ fontSize: "0.75rem", color: "var(--text-faint)", marginLeft: 10 }}>{total} matches played</span>
         </div>
         {rows.length === 0 ? (
@@ -131,7 +131,7 @@ export default async function ResultsPage() {
                       {f.home_team} <span style={{ color: "var(--text-faint)" }}>vs</span> {f.away_team}
                     </td>
                     <td className="table-cell">
-                      <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{hs} – {as_}</span>
+                      <span style={{ fontWeight: 400, fontVariantNumeric: "tabular-nums" }}>{hs} – {as_}</span>
                     </td>
                     <td className="table-cell" style={{ minWidth: 120 }}>
                       <MiniBar h={h} d={d} a={a} />
@@ -142,7 +142,7 @@ export default async function ResultsPage() {
                     <td className="table-cell" style={{ color: "var(--text-faint)", fontSize: "0.8125rem" }}>{pred}</td>
                     <td className="table-cell" style={{ color: "var(--text-faint)", fontSize: "0.8125rem" }}>{actual}</td>
                     <td className="table-cell">
-                      <span style={{ fontSize: "0.75rem", fontWeight: 700, color: ok ? "var(--positive)" : "var(--negative)", background: ok ? "var(--positive-dim)" : "var(--negative-dim)", borderRadius: 4, padding: "2px 7px" }}>
+                      <span style={{ fontSize: "0.75rem", fontWeight: 700, color: ok ? "var(--positive)" : "var(--negative)", background: ok ? "var(--positive-dim)" : "var(--negative-dim)", borderRadius: 0, padding: "2px 7px" }}>
                         {ok ? "✓ Correct" : "✗ Missed"}
                       </span>
                     </td>

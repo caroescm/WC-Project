@@ -162,8 +162,8 @@ function accuracyInsight(log: { ok: boolean }[], correct: number, total: number)
 
 function SectionLabel({ text, href, linkLabel }: { text: string; href?: string; linkLabel?: string }) {
   return (
-    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
-      <span style={{ fontSize:"0.6875rem", fontWeight:700, color:"var(--text-faint)", letterSpacing:"0.07em", textTransform:"uppercase" }}>
+    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+      <span className="label-upper" style={{ fontSize:"0.6875rem", fontWeight:700, color:"var(--text-faint)" }}>
         {text}
       </span>
       {href && <Link href={href} className="back-link">{linkLabel ?? "See All ↗"}</Link>}
@@ -265,14 +265,14 @@ export default async function Home() {
       : `${topTeam} leads 3,000 simulations at ${(topEntry!.winner * 100).toFixed(1)}%${gap > 0.05 ? ` — a ${(gap * 100).toFixed(1)}-point edge over the field` : second ? `, narrowly ahead of ${second[0]} at ${(second[1].winner * 100).toFixed(1)}%` : ""}. Accuracy updates as results come in.`;
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
 
       {/* ── PAGE HEADER ────────────────────────────────────────── */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:4 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
         <h1 style={{ margin:0, fontSize:"1.375rem", fontWeight:700, letterSpacing:"-0.02em", color:"var(--foreground)" }}>
           World Cup 2026
         </h1>
-        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:"0.8125rem", color:"var(--text-muted)", background:"#ffffff", border:"1px solid var(--border)", borderRadius:8, padding:"6px 12px" }}>
+        <div className="date-badge" style={{ display:"flex", alignItems:"center", gap:6, fontSize:"0.8125rem", color:"var(--text-muted)", background:"var(--card-bg)", border:"1px solid var(--border-soft)", borderRadius: 0, padding:"8px 12px" }}>
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="1" y="2.5" width="14" height="12.5" rx="2" stroke="currentColor" strokeWidth="1.4"/>
             <path d="M1 6.5H15" stroke="currentColor" strokeWidth="1.4"/>
@@ -284,93 +284,83 @@ export default async function Home() {
       </div>
 
       {/* ── 1. KPI CARDS ───────────────────────────────────────── */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(5, 1fr)", gap:6 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(5, 1fr)", gap:8 }}>
 
-        {/* 1 — Tournament Favorite (hero: deep pitch green) */}
-        <div style={{ background:"#1B4332", borderRadius:16, padding:"10px 16px 8px", display:"flex", flexDirection:"column", height:78 }}>
-          <span style={{ fontSize:"0.625rem", fontWeight:700, color:"rgba(255,255,255,0.5)", letterSpacing:"0.07em", textTransform:"uppercase" }}>
+        {/* 1 — Tournament Favorite */}
+        <div className="kpi-card-dark" style={{ background:"#1B4332", borderRadius: 0, padding:"8px 16px 12px", display:"flex", flexDirection:"column", height:80 }}>
+          <span className="label-upper" style={{ fontSize:"0.625rem", fontWeight:700, color:"rgba(255,255,255,0.5)" }}>
             Tournament Favorite
           </span>
-          <span style={{ fontSize:"1.375rem", fontWeight:700, color:"#ffffff", letterSpacing:"-0.02em", lineHeight:1.15, marginTop:4 }}>
+          <span style={{ fontSize:"1.375rem", fontWeight:400, color:"#ffffff", letterSpacing:"-0.03em", lineHeight:1.1, marginTop:2 }}>
             {topTeam ?? "—"}
           </span>
-          <div style={{ marginTop:0, display:"flex", justifyContent:"flex-end" }}>
-            <span style={{ fontSize:"0.6875rem", color:"rgba(255,255,255,0.45)" }}>
-              {topEntry ? `${(topEntry.winner * 100).toFixed(1)}% to win` : "—"}
-            </span>
-          </div>
+          <span className="num" style={{ fontSize:"0.6875rem", color:"rgba(255,255,255,0.45)", marginTop:1 }}>
+            {topEntry ? `${(topEntry.winner * 100).toFixed(1)}% to win` : "—"}
+          </span>
         </div>
 
-        {/* 2 — Outperforming (white + green accent) */}
-        <div style={{ background:"#ffffff", borderRadius:16, padding:"10px 16px 8px", display:"flex", flexDirection:"column", height:78, border:"1px solid var(--border)" }}>
-          <span style={{ fontSize:"0.625rem", fontWeight:700, color:"#2E8B57", letterSpacing:"0.07em", textTransform:"uppercase" }}>
+        {/* 2 — Outperforming */}
+        <div className="kpi-card-white" style={{ background:"var(--card-bg)", borderRadius: 0, padding:"8px 16px 12px", display:"flex", flexDirection:"column", height:80, border:"1px solid var(--border-soft)" }}>
+          <span className="label-upper" style={{ fontSize:"0.625rem", fontWeight:700, color:"#2E8B57" }}>
             Outperforming
           </span>
-          <span style={{ fontSize:"1.375rem", fontWeight:700, color:"#10241A", letterSpacing:"-0.02em", lineHeight:1.15, marginTop:4 }}>
+          <span className="kpi-text" style={{ fontSize:"1.375rem", fontWeight:400, color:"var(--kpi-text)", letterSpacing:"-0.03em", lineHeight:1.1, marginTop:2 }}>
             {xgOver ? xgOver[0] : "—"}
           </span>
-          <div style={{ marginTop:0, display:"flex", justifyContent:"flex-end" }}>
-            <span style={{ fontSize:"0.6875rem", color:"#2E8B57" }}>
-              {xgOver ? `+${xgOver[1].toFixed(1)} goals vs xG` : "awaiting results"}
-            </span>
-          </div>
+          <span className="num" style={{ fontSize:"0.6875rem", color:"#2E8B57", marginTop:1 }}>
+            {xgOver ? `+${xgOver[1].toFixed(1)} goals vs xG` : "awaiting results"}
+          </span>
         </div>
 
-        {/* 3 — Underperforming (white + red accent) */}
-        <div style={{ background:"#ffffff", borderRadius:16, padding:"10px 16px 8px", display:"flex", flexDirection:"column", height:78, border:"1px solid var(--border)" }}>
-          <span style={{ fontSize:"0.625rem", fontWeight:700, color:"#C24545", letterSpacing:"0.07em", textTransform:"uppercase" }}>
+        {/* 3 — Underperforming */}
+        <div className="kpi-card-white" style={{ background:"var(--card-bg)", borderRadius: 0, padding:"8px 16px 12px", display:"flex", flexDirection:"column", height:80, border:"1px solid var(--border-soft)" }}>
+          <span className="label-upper" style={{ fontSize:"0.625rem", fontWeight:700, color:"#B5483F" }}>
             Underperforming
           </span>
-          <span style={{ fontSize:"1.375rem", fontWeight:700, color:"#10241A", letterSpacing:"-0.02em", lineHeight:1.15, marginTop:4 }}>
+          <span className="kpi-text" style={{ fontSize:"1.375rem", fontWeight:400, color:"var(--kpi-text)", letterSpacing:"-0.03em", lineHeight:1.1, marginTop:2 }}>
             {xgUnder ? xgUnder[0] : "—"}
           </span>
-          <div style={{ marginTop:0, display:"flex", justifyContent:"flex-end" }}>
-            <span style={{ fontSize:"0.6875rem", color:"#C24545" }}>
-              {xgUnder ? `${xgUnder[1].toFixed(1)} goals vs xG` : "awaiting results"}
-            </span>
-          </div>
+          <span className="num" style={{ fontSize:"0.6875rem", color:"#B5483F", marginTop:1 }}>
+            {xgUnder ? `${xgUnder[1].toFixed(1)} goals vs xG` : "awaiting results"}
+          </span>
         </div>
 
-        {/* 4 — Prediction Accuracy (white + gold accent) */}
-        <div style={{ background:"#ffffff", borderRadius:16, padding:"10px 16px 8px", display:"flex", flexDirection:"column", height:78, border:"1px solid var(--border)" }}>
-          <span style={{ fontSize:"0.625rem", fontWeight:700, color:"#C9981A", letterSpacing:"0.07em", textTransform:"uppercase" }}>
+        {/* 4 — Prediction Accuracy */}
+        <div className="kpi-card-white" style={{ background:"var(--card-bg)", borderRadius: 0, padding:"8px 16px 12px", display:"flex", flexDirection:"column", height:80, border:"1px solid var(--border-soft)" }}>
+          <span className="label-upper" style={{ fontSize:"0.625rem", fontWeight:700, color:"#C9981A" }}>
             Prediction Accuracy
           </span>
-          <span style={{ fontSize:"1.75rem", fontWeight:700, color:"#10241A", letterSpacing:"-0.02em", lineHeight:1, marginTop:4 }}>
+          <span className="kpi-text num-lg" style={{ fontSize:"1.75rem", fontWeight:400, color:"var(--kpi-text)", lineHeight:1, marginTop:2 }}>
             {stats ? `${(stats.correct / stats.total * 100).toFixed(0)}%` : "—"}
           </span>
-          <div style={{ marginTop:0, display:"flex", justifyContent:"flex-end" }}>
-            <span style={{ fontSize:"0.6875rem", color:"#C9981A" }}>
-              {stats ? `${stats.correct} of ${stats.total} correct` : "awaiting results"}
-            </span>
-          </div>
+          <span className="num" style={{ fontSize:"0.6875rem", color:"#C9981A", marginTop:1 }}>
+            {stats ? `${stats.correct} of ${stats.total} correct` : "awaiting results"}
+          </span>
         </div>
 
-        {/* 5 — Matches Remaining (white + sage accent) */}
-        <div style={{ background:"#ffffff", borderRadius:16, padding:"10px 16px 8px", display:"flex", flexDirection:"column", height:78, border:"1px solid var(--border)" }}>
-          <span style={{ fontSize:"0.625rem", fontWeight:700, color:"#3D6B52", letterSpacing:"0.07em", textTransform:"uppercase" }}>
+        {/* 5 — Matches Remaining */}
+        <div className="kpi-card-white" style={{ background:"var(--card-bg)", borderRadius: 0, padding:"8px 16px 12px", display:"flex", flexDirection:"column", height:80, border:"1px solid var(--border-soft)" }}>
+          <span className="label-upper" style={{ fontSize:"0.625rem", fontWeight:700, color:"#3D6B52" }}>
             Matches Remaining
           </span>
-          <span style={{ fontSize:"1.75rem", fontWeight:700, color:"#10241A", letterSpacing:"-0.02em", lineHeight:1, marginTop:4 }}>
+          <span className="kpi-text num-lg" style={{ fontSize:"1.75rem", fontWeight:400, color:"var(--kpi-text)", lineHeight:1, marginTop:2 }}>
             {upcoming.length}
           </span>
-          <div style={{ marginTop:0, display:"flex", justifyContent:"flex-end" }}>
-            <span style={{ fontSize:"0.6875rem", color:"#3D6B52" }}>
-              {played.length} played
-            </span>
-          </div>
+          <span className="num" style={{ fontSize:"0.6875rem", color:"#3D6B52", marginTop:1 }}>
+            {played.length} played
+          </span>
         </div>
 
       </div>
 
       {/* ── 2. CHARTS ──────────────────────────────────────────── */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6, alignItems:"stretch", marginTop:4 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, alignItems:"stretch", marginTop:8.5 }}>
         <TournamentOutlook simulation={simulation} />
         <AccuracyChart matchLog={matchLog} />
       </div>
 
       {/* ── 3. BOTTOM PANELS ───────────────────────────────────── */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:6, alignItems:"stretch", marginTop:4 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, alignItems:"stretch", marginTop:8.5 }}>
         <WinTypeDonut played={played} />
         <PerformanceAnalysis teamXG={stats?.teamXG ?? {}} teamGoals={stats?.teamGoals ?? {}} />
         <UnpredictableGroups fixtures={fixtures} />

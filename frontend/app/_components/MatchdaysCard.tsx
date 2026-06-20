@@ -64,7 +64,7 @@ const VH = HH + 7 * STEP - G;            // 16 + 154 - 4 = 166
 
 export default function MatchdaysCard({ matchesPlayed, daysElapsed }: Props) {
   return (
-    <div className="card" style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+    <div className="card" style={{ padding: "10px 14px 14px", display: "flex", flexDirection: "column", gap: 12 }}>
 
       {/* Title */}
       <div style={{ fontSize: "0.6875rem", fontWeight: 700, color: "var(--text-faint)", letterSpacing: "0.07em", textTransform: "uppercase" }}>

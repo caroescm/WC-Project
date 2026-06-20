@@ -12,7 +12,7 @@ type Category = "over" | "under";
 
 const CATEGORY_META: { key: Category; label: string; color: string }[] = [
   { key: "over",  label: "Over xG",  color: "#2E8B57" },
-  { key: "under", label: "Under xG", color: "#C24545" },
+  { key: "under", label: "Under xG", color: "#B5483F" },
 ];
 
 const XG_COLOR = "#1B4332";
@@ -24,7 +24,7 @@ const TRACK_X  = LABEL_W;
 const TRACK_W  = TOTAL_W - TRACK_X - PAD_R;
 
 const ROW_H    = 20;
-const TEAM_GAP = 28;
+const TEAM_GAP = 16;
 const SLOT_H   = ROW_H + TEAM_GAP;
 const HEADER_H = 24;
 
@@ -51,8 +51,8 @@ export default function PerformanceAnalysis({ teamXG, teamGoals }: Props) {
 
   if (teams.length === 0) {
     return (
-      <div className="card" style={{ padding: "20px 24px", height: "100%" }}>
-        <div style={{ fontSize: "1rem", fontWeight: 700, color: "#0e1420" }}>Team Performance</div>
+      <div className="card" style={{ padding: "10px 14px 14px", height: "100%" }}>
+        <div style={{ fontSize: "1rem", fontWeight: 400, color: "#0e1420" }}>Team Performance</div>
         <p style={{ fontSize: "0.75rem", color: "#6b7280", marginTop: 3 }}>Awaiting first results.</p>
       </div>
     );
@@ -62,8 +62,8 @@ export default function PerformanceAnalysis({ teamXG, teamGoals }: Props) {
     .map(t => ({ team: t, xg: teamXG[t], goals: teamGoals[t], delta: teamGoals[t] - teamXG[t] }))
     .sort((a, b) => b.delta - a.delta);
 
-  const topOver  = ranked.filter(d => d.delta >= 0).slice(0, 3);
-  const topUnder = ranked.filter(d => d.delta <  0).slice(-3).reverse();
+  const topOver  = ranked.filter(d => d.delta >= 0).slice(0, 4);
+  const topUnder = ranked.filter(d => d.delta <  0).slice(-4).reverse();
 
   const displayEntries = category === "over" ? topOver : topUnder;
   const activeColor = CATEGORY_META.find(c => c.key === category)!.color;
@@ -75,33 +75,33 @@ export default function PerformanceAnalysis({ teamXG, teamGoals }: Props) {
   const ticks    = [0, Math.round(maxTick / 2), maxTick];
   const toX      = (v: number) => TRACK_X + (v / domain) * TRACK_W;
 
-  const chartH = HEADER_H + 3 * SLOT_H;
+  const chartH = HEADER_H + 4 * SLOT_H;
 
   return (
-    <div className="card" style={{ padding: "14px 18px", display: "flex", flexDirection: "column", gap: 8, height: "100%" }}>
+    <div className="card" style={{ padding: "10px 14px 14px", display: "flex", flexDirection: "column", gap: 4, height: "100%" }}>
 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <div style={{ fontSize: "1rem", fontWeight: 700, color: "#0e1420" }}>Team Performance</div>
+          <div style={{ fontSize: "1rem", fontWeight: 400, color: "var(--foreground)" }}>Team Performance</div>
 
           {/* Legend + toggle buttons in one row */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
             {/* xG legend dot */}
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <svg width={14} height={10} style={{ overflow: "visible" }}>
-                <circle cx={3.5} cy={5} r={3.5} fill="#fff" stroke={XG_COLOR} strokeWidth={1.5} />
+                <circle cx={3.5} cy={5} r={3.5} fill="var(--card-bg)" stroke={XG_COLOR} strokeWidth={1.5} />
               </svg>
-              <span style={{ fontSize: "0.625rem", color: "#374151" }}>xG</span>
+              <span style={{ fontSize: "0.625rem", color: "var(--text-muted)" }}>xG</span>
             </div>
             {/* Goals legend dot */}
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <div style={{ width: 7, height: 7, borderRadius: "50%", background: activeColor }} />
-              <span style={{ fontSize: "0.625rem", color: "#374151" }}>Goals</span>
+              <div style={{ width: 7, height: 7, borderRadius: 0, background: activeColor }} />
+              <span style={{ fontSize: "0.625rem", color: "var(--text-muted)" }}>Goals</span>
             </div>
 
             {/* Divider */}
-            <div style={{ width: 1, height: 12, background: "#d1d5db" }} />
+            <div style={{ width: 1, height: 12, background: "var(--border)" }} />
 
             {/* Over / Under toggle chips */}
             {CATEGORY_META.map(({ key, label, color }) => (
@@ -111,12 +111,12 @@ export default function PerformanceAnalysis({ teamXG, teamGoals }: Props) {
                 style={{
                   fontSize: "0.5625rem",
                   fontWeight: 600,
-                  padding: "2px 7px",
+                  padding: "4px 8px",
                   border: "none",
-                  borderRadius: 999,
+                  borderRadius: 0,
                   cursor: "pointer",
-                  background: category === key ? color : "#E4EDE7",
-                  color:      category === key ? "#ffffff" : "#6B7C70",
+                  background: category === key ? color : "var(--toggle-track)",
+                  color:      category === key ? "#ffffff" : "var(--toggle-inactive)",
                   transition: "all 0.15s",
                   whiteSpace: "nowrap",
                 }}
@@ -137,8 +137,8 @@ export default function PerformanceAnalysis({ teamXG, teamGoals }: Props) {
         {/* Tick marks */}
         {ticks.map(v => (
           <g key={v}>
-            <text x={toX(v)} y={10} textAnchor="middle" fontSize={7} fill="#9ca3af">{v}</text>
-            <line x1={toX(v)} y1={HEADER_H} x2={toX(v)} y2={chartH} stroke="#f3f4f6" strokeWidth={1} />
+            <text x={toX(v)} y={10} textAnchor="middle" fontSize={7} fill="var(--svg-text-faint)" style={{ fontVariantNumeric: "tabular-nums" }}>{v}</text>
+            <line x1={toX(v)} y1={HEADER_H} x2={toX(v)} y2={chartH} stroke="var(--border)" strokeWidth={1} />
           </g>
         ))}
 
@@ -170,7 +170,7 @@ export default function PerformanceAnalysis({ teamXG, teamGoals }: Props) {
 
               {/* Team label slides in from left */}
               <text x={LABEL_W - 5} y={y + 4.5} textAnchor="end" fontSize={13}
-                fill={isH ? "#0e1420" : "#374151"} fontWeight={isH ? 600 : 400}
+                fill={isH ? "var(--foreground)" : "var(--svg-text)"} fontWeight={isH ? 600 : 400}
                 style={{
                   opacity: mounted ? 1 : 0,
                   transform: mounted ? "translateX(0)" : "translateX(-12px)",
@@ -209,7 +209,8 @@ export default function PerformanceAnalysis({ teamXG, teamGoals }: Props) {
               />
 
               {isH && (
-                <text x={xXG} y={y - 9} textAnchor="middle" fontSize={8} fill={XG_COLOR} fontWeight={700}>
+                <text x={xXG} y={y - 9} textAnchor="middle" fontSize={8} fill={XG_COLOR} fontWeight={400}
+                  style={{ fontVariantNumeric: "tabular-nums" }}>
                   {d.xg.toFixed(1)}
                 </text>
               )}

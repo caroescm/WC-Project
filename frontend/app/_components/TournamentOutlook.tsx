@@ -17,7 +17,7 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: "sf",     label: "Semifinal" },
 ];
 
-const CHART_H = 145;
+const CHART_H = 150;
 const N_TEAMS = 12;
 
 export default function TournamentOutlook({ simulation, maxTeams = 7 }: { simulation: Record<string, SimEntry>; maxTeams?: number }) {
@@ -43,7 +43,7 @@ export default function TournamentOutlook({ simulation, maxTeams = 7 }: { simula
 
   if (ranked.length === 0) {
     return (
-      <div className="card" style={{ padding: "20px 24px" }}>
+      <div className="card" style={{ padding: "10px 14px 14px" }}>
         <p style={{ fontSize: "0.8125rem", color: "var(--text-faint)", margin: 0 }}>Simulation unavailable.</p>
       </div>
     );
@@ -57,24 +57,23 @@ export default function TournamentOutlook({ simulation, maxTeams = 7 }: { simula
   const ySteps = [0, 0.25, 0.5, 0.75, 1].map(f => f * yMax);
 
   return (
-    <div className="card" style={{ padding: "14px 18px", display: "flex", flexDirection: "column", gap: 8, height: "100%" }}>
+    <div className="card" style={{ padding: "10px 14px 14px", display: "flex", flexDirection: "column", gap: 4, height: "100%" }}>
 
       {/* ── Header ── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: "1rem", fontWeight: 700, color: "#0e1420" }}>Monte Carlo Simulation</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ display: "flex", background: "#E4EDE7", borderRadius: 999, padding: 3, gap: 2 }}>
+        <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--foreground)" }}>Monte Carlo Simulation</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="toggle-track" style={{ display: "flex", background: "var(--toggle-track)", borderRadius: 0, padding: 3, gap: 2 }}>
             {FILTERS.map(({ key, label }) => (
               <button key={key} onClick={() => setFilter(key)} style={{
-                padding: "4px 10px",
+                padding: "4px 12px",
                 fontSize: "0.625rem",
                 fontWeight: 600,
                 border: "none",
-                borderRadius: 999,
+                borderRadius: 0,
                 cursor: "pointer",
-                background: filter === key ? "#1B4332" : "transparent",
-                color:      filter === key ? "#ffffff"  : "#6B7C70",
-                boxShadow:  filter === key ? "0 1px 3px rgba(0,0,0,0.18)" : "none",
+                background: filter === key ? "#2E8B57" : "transparent",
+                color:      filter === key ? "#ffffff"  : "var(--toggle-inactive)",
                 transition: "all 0.15s",
                 whiteSpace: "nowrap",
               }}>
@@ -91,9 +90,9 @@ export default function TournamentOutlook({ simulation, maxTeams = 7 }: { simula
       {/* ── Legend (always occupies space, hidden when not in All mode) ── */}
       <div style={{ display: "flex", gap: 16, alignItems: "center", visibility: filter === "all" ? "visible" : "hidden" }}>
         {(["winner", "final", "sf"] as const).map(k => (
-          <div key={k} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <div style={{ width: 8, height: 8, borderRadius: 2, background: COLORS[k], flexShrink: 0 }} />
-            <span style={{ fontSize: "0.625rem", color: "#6b7280" }}>
+          <div key={k} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <div style={{ width: 8, height: 8, borderRadius: 0, background: COLORS[k], flexShrink: 0 }} />
+            <span style={{ fontSize: "0.625rem", color: "var(--text-muted)" }}>
               {k === "winner" ? "Winner" : k === "final" ? "Final" : "Semifinal"}
             </span>
           </div>
@@ -102,14 +101,14 @@ export default function TournamentOutlook({ simulation, maxTeams = 7 }: { simula
 
       {/* ── Chart ── */}
       <div style={{ position: "relative" }}>
-        <div style={{ position: "relative", height: CHART_H, paddingLeft: 36, marginTop: 20 }}>
+        <div style={{ position: "relative", height: CHART_H, paddingLeft: 36, marginTop: 10 }}>
 
           {/* Gridlines */}
           {ySteps.map((pct, i) => {
             const top = ((yMax - pct) / yMax) * CHART_H;
             return (
               <div key={i} style={{ position: "absolute", top, left: 0, right: 0, display: "flex", alignItems: "center", transform: "translateY(-50%)" }}>
-                <span style={{ width: 30, fontSize: "0.5625rem", color: "#9ca3af", textAlign: "right", flexShrink: 0 }}>
+                <span className="num" style={{ width: 30, fontSize: "0.5625rem", color: "var(--text-faint)", textAlign: "right", flexShrink: 0 }}>
                   {(pct * 100).toFixed(0)}%
                 </span>
                 <div style={{ flex: 1, height: 1, background: "#e9e6f4", marginLeft: 6, opacity: i === 0 ? 1 : 0.6 }} />
@@ -135,7 +134,7 @@ export default function TournamentOutlook({ simulation, maxTeams = 7 }: { simula
                     onMouseLeave={() => { setHovered(null); setTooltip(null); }}
                   >
                     <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", height: CHART_H, width: "100%", maxWidth: 32 }}>
-                      <div style={{ height: wH,  background: COLORS.winner, borderRadius: "6px 6px 0 0", opacity: fade ? 0.3 : 1, transition: "height 0.5s cubic-bezier(0.34,1.2,0.64,1), opacity 0.15s" }} />
+                      <div style={{ height: wH,  background: COLORS.winner, borderRadius: 0, opacity: fade ? 0.3 : 1, transition: "height 0.5s cubic-bezier(0.34,1.2,0.64,1), opacity 0.15s" }} />
                       <div style={{ height: fH,  background: COLORS.final,                               opacity: fade ? 0.3 : 1, transition: "height 0.5s cubic-bezier(0.34,1.2,0.64,1) 30ms, opacity 0.15s" }} />
                       <div style={{ height: sfH, background: COLORS.sf,                                  opacity: fade ? 0.3 : 1, transition: "height 0.5s cubic-bezier(0.34,1.2,0.64,1) 60ms, opacity 0.15s" }} />
                     </div>
@@ -157,7 +156,7 @@ export default function TournamentOutlook({ simulation, maxTeams = 7 }: { simula
                   <div style={{
                     height: barH, width: "100%", maxWidth: 32,
                     background: color,
-                    borderRadius: "6px 6px 0 0",
+                    borderRadius: 0,
                     opacity: fade ? 0.3 : 1,
                     transition: "height 0.45s cubic-bezier(0.34,1.2,0.64,1), opacity 0.15s",
                   }} />
@@ -170,7 +169,7 @@ export default function TournamentOutlook({ simulation, maxTeams = 7 }: { simula
         {/* X-axis labels */}
         <div style={{ display: "flex", gap: 4, paddingLeft: 36, marginTop: 4 }}>
           {ranked.map(([team]) => (
-            <div key={team} style={{ flex: 1, textAlign: "center", fontSize: "0.5625rem", color: "#374151", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <div key={team} style={{ flex: 1, textAlign: "center", fontSize: "0.5625rem", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {team}
             </div>
           ))}
@@ -185,13 +184,12 @@ export default function TournamentOutlook({ simulation, maxTeams = 7 }: { simula
           left: tooltip.x - 72,
           background: "#10241A",
           color: "#fff",
-          borderRadius: 12,
+          borderRadius: 0,
           padding: "8px 12px",
           fontSize: "0.6875rem",
           pointerEvents: "none",
           zIndex: 999,
           minWidth: 140,
-          boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
         }}>
           <div style={{ fontWeight: 700, marginBottom: 5 }}>{tooltip.team}</div>
           {([
@@ -199,12 +197,12 @@ export default function TournamentOutlook({ simulation, maxTeams = 7 }: { simula
             { label: "Final",     val: tooltip.p.final,  color: COLORS.final  },
             { label: "Semifinal", val: tooltip.p.sf,     color: COLORS.sf     },
           ] as const).map(({ label, val, color }) => (
-            <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 2 }}>
+            <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 4 }}>
               <span style={{ color: "#9ca3af", display: "flex", alignItems: "center", gap: 4 }}>
-                <span style={{ width: 6, height: 6, borderRadius: 1, background: color, display: "inline-block" }} />
+                <span style={{ width: 6, height: 6, borderRadius: 0, background: color, display: "inline-block" }} />
                 {label}
               </span>
-              <span style={{ fontWeight: 600 }}>{(val * 100).toFixed(1)}%</span>
+              <span className="num" style={{ fontWeight: 600 }}>{(val * 100).toFixed(1)}%</span>
             </div>
           ))}
         </div>

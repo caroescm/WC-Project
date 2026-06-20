@@ -72,18 +72,13 @@ export default function AccuracyChart({ matchLog }: { matchLog: MatchEntry[] }) 
   ];
 
   return (
-    <div className="card" style={{ padding: "14px 18px", display: "flex", flexDirection: "column", gap: 8, height: "100%" }}>
+    <div className="card" style={{ padding: "10px 14px 14px", display: "flex", flexDirection: "column", gap: 4, height: "100%" }}>
 
       {/* ── Header ── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-            <span style={{ fontSize: "1rem", fontWeight: 700, color: "var(--foreground)" }}>Model Accuracy</span>
-            {finalAcc !== null && (
-              <span style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--accent)", letterSpacing: "-0.02em", lineHeight: 1 }}>
-                {(finalAcc * 100).toFixed(0)}%
-              </span>
-            )}
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+            <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--foreground)" }}>Model Accuracy</span>
           </div>
           {finalAcc !== null && (
             <span style={{ fontSize: "0.6875rem", color: "var(--text-faint)", marginTop: 2, display: "block" }}>
@@ -105,6 +100,13 @@ export default function AccuracyChart({ matchLog }: { matchLog: MatchEntry[] }) 
         </div>
       ) : (
         <div style={{ position: "relative" }}>
+          {finalAcc !== null && (
+            <div style={{ position: "absolute", top: 0, right: 0, textAlign: "right", pointerEvents: "none", zIndex: 1 }}>
+              <span className="num-lg" style={{ fontSize: "1.4rem", fontWeight: 400, color: "var(--accent)", lineHeight: 1, opacity: 0.18 }}>
+                {(finalAcc * 100).toFixed(0)}%
+              </span>
+            </div>
+          )}
           <svg viewBox={`0 0 ${W} ${CHART_H}`} style={{ width: "100%", height: CHART_H, display: "block", overflow: "visible" }}>
             <defs>
               <linearGradient id="acc-area" x1="0" y1="0" x2="0" y2="1">
@@ -128,7 +130,7 @@ export default function AccuracyChart({ matchLog }: { matchLog: MatchEntry[] }) 
                     stroke="var(--border)" strokeWidth="1"
                     strokeDasharray={pct === 0.5 ? "4 4" : undefined} />
                   <text x={PAD.l - 6} y={y + 8} textAnchor="end"
-                    style={{ fontSize: 9, fill: "var(--text-faint)", fontFamily: "inherit" }}>
+                    style={{ fontSize: 9, fill: "var(--svg-text-faint)", fontFamily: "inherit" }}>
                     {label}
                   </text>
                 </g>
@@ -195,22 +197,21 @@ export default function AccuracyChart({ matchLog }: { matchLog: MatchEntry[] }) 
               transform: "translateX(-50%)",
               background: "#10241A",
               color: "#ffffff",
-              borderRadius: 12,
-              padding: "7px 11px",
+              borderRadius: 0,
+              padding: "8px 12px",
               fontSize: "0.6875rem",
               pointerEvents: "none",
               zIndex: 10,
               whiteSpace: "nowrap",
-              boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
             }}>
-              <div style={{ fontWeight: 700, marginBottom: 2 }}>
+              <div className="num" style={{ fontWeight: 400, marginBottom: 2 }}>
                 {(tooltip.acc * 100).toFixed(1)}% accuracy
               </div>
               <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.625rem" }}>
                 {tooltip.home} vs {tooltip.away}
               </div>
               <div style={{ color: tooltip.ok ? "#6EE7A0" : "#F87171", fontSize: "0.625rem", marginTop: 1 }}>
-                {tooltip.ok ? "✓ Correct" : "✗ Wrong"}
+                {tooltip.ok ? "Correct" : "Wrong"}
               </div>
             </div>
           )}
@@ -218,17 +219,17 @@ export default function AccuracyChart({ matchLog }: { matchLog: MatchEntry[] }) 
       )}
 
       {/* ── Stage filter tabs ── */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
         {STAGE_TABS.map(({ key, label }) => (
           <button key={key} onClick={() => setStage(key)} style={{
-            padding: "4px 10px",
+            padding: "4px 12px",
             fontSize: "0.625rem",
             fontWeight: 600,
             border: "none",
-            borderRadius: 999,
+            borderRadius: 0,
             cursor: "pointer",
-            background: stage === key ? "#1B4332" : "#E4EDE7",
-            color:      stage === key ? "#ffffff"  : "#6B7C70",
+            background: stage === key ? "#2E8B57" : "var(--toggle-track)",
+            color:      stage === key ? "#ffffff"  : "var(--toggle-inactive)",
             transition: "all 0.15s",
             whiteSpace: "nowrap",
           }}>

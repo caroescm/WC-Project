@@ -50,7 +50,7 @@ function computeStandings(fixtures: Fixture[], group: string): StandingRow[] {
 function GroupTable({ group, rows }: { group: string; rows: StandingRow[] }) {
   return (
     <div className="card" style={{ overflow: "hidden" }}>
-      <div style={{ padding: "12px 16px", background: "#1a1628", borderRadius: "8px 8px 0 0" }}>
+      <div style={{ padding: "12px 16px", background: "#1a1628", borderRadius: 0 }}>
         <span style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#ffffff", letterSpacing: "0.04em" }}>{group}</span>
       </div>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -71,7 +71,7 @@ function GroupTable({ group, rows }: { group: string; rows: StandingRow[] }) {
             return (
               <tr key={r.team} style={{ borderBottom: i < rows.length - 1 ? "1px solid var(--border)" : "none" }}>
                 <td style={{ padding: "9px 10px", fontSize: "0.8125rem", fontWeight: qualifies ? 600 : 400, color: qualifies ? "var(--foreground)" : "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
-                  {qualifies && <span style={{ width: 3, height: 14, background: "var(--accent)", borderRadius: 2, flexShrink: 0 }} />}
+                  {qualifies && <span style={{ width: 3, height: 14, background: "var(--accent)", borderRadius: 0, flexShrink: 0 }} />}
                   {r.team}
                 </td>
                 {[r.played, r.w, r.d, r.l, r.gf, r.ga, r.gd > 0 ? `+${r.gd}` : r.gd].map((v, j) => (
@@ -99,14 +99,14 @@ export default async function GroupsPage() {
   const played = fixtures.filter(f => f.result !== null);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 
       {/* Page header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <h1 style={{ margin: 0, fontSize: "1.75rem", fontWeight: 700, letterSpacing: "-0.02em", color: "var(--foreground)" }}>
           Groups
         </h1>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.8125rem", color: "var(--text-muted)", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, padding: "6px 12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.8125rem", color: "var(--text-muted)", background: "#fff", border: "1px solid var(--border)", borderRadius: 0, padding: "6px 12px" }}>
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
             <rect x="1" y="2.5" width="14" height="12.5" rx="2" stroke="currentColor" strokeWidth="1.4"/>
             <path d="M1 6.5H15" stroke="currentColor" strokeWidth="1.4"/>
@@ -130,7 +130,7 @@ export default async function GroupsPage() {
             Group Standings
           </span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
           {groups.map(group => (
             <GroupTable key={group} group={group} rows={computeStandings(fixtures, group)} />
           ))}

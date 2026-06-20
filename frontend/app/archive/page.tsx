@@ -69,7 +69,7 @@ function ArchiveCard({ fixture }: { fixture: Fixture }) {
         <span className="sport" style={{ fontSize: "1.25rem", flex: 1, color: homeWon ? "var(--foreground)" : "var(--text-faint)" }}>
           {fixture.home_team}
         </span>
-        <div className="sport" style={{ flexShrink: 0, padding: "4px 16px", borderRadius: 8, fontWeight: 700, fontSize: "1.125rem", background: "var(--bg-page)", color: "var(--foreground)" }}>
+        <div className="sport" style={{ flexShrink: 0, padding: "4px 16px", borderRadius: 0, fontWeight: 700, fontSize: "1.125rem", background: "var(--bg-page)", color: "var(--foreground)" }}>
           {hg} – {ag}
         </div>
         <span className="sport" style={{ fontSize: "1.25rem", flex: 1, textAlign: "right", color: awayWon ? "var(--foreground)" : "var(--text-faint)" }}>

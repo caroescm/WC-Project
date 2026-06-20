@@ -39,14 +39,14 @@ export default async function TeamsPage() {
     .sort((a, b) => b.delta - a.delta);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 
       {/* Page header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <h1 style={{ margin: 0, fontSize: "1.75rem", fontWeight: 700, letterSpacing: "-0.02em", color: "var(--foreground)" }}>
           Teams
         </h1>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.8125rem", color: "var(--text-muted)", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, padding: "6px 12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.8125rem", color: "var(--text-muted)", background: "#fff", border: "1px solid var(--border)", borderRadius: 0, padding: "6px 12px" }}>
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
             <rect x="1" y="2.5" width="14" height="12.5" rx="2" stroke="currentColor" strokeWidth="1.4"/>
             <path d="M1 6.5H15" stroke="currentColor" strokeWidth="1.4"/>
@@ -62,8 +62,8 @@ export default async function TeamsPage() {
 
       {/* Full stats table */}
       <div className="card table-wrap">
-        <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid var(--border)" }}>
-          <span style={{ fontSize: "1rem", fontWeight: 700, color: "#0e1420" }}>xG vs Goals — All Teams</span>
+        <div style={{ padding: "10px 14px 8px", borderBottom: "1px solid var(--border)" }}>
+          <span style={{ fontSize: "1rem", fontWeight: 400, color: "#0e1420" }}>xG vs Goals — All Teams</span>
         </div>
         {rows.length === 0 ? (
           <div className="empty">No matches played yet.</div>

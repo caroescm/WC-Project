@@ -36,7 +36,7 @@ export function Countdown({ nextDate, homeTeam, awayTeam, group }: CountdownProp
   return (
     <div style={{
       display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16,
-      borderRadius: 8, padding: "10px 16px",
+      borderRadius: 0, padding: "10px 16px",
       background: "var(--accent-light)", border: "1px solid var(--accent-dim)",
     }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>

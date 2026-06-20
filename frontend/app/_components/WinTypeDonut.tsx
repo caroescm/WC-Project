@@ -53,21 +53,21 @@ export default function WinTypeDonut({ played }: { played: Fixture[] }) {
   };
 
   return (
-    <div className="card" style={{ padding: "14px 18px", display: "flex", flexDirection: "column", gap: 8, height: "100%" }}>
+    <div className="card" style={{ padding: "10px 14px 14px", display: "flex", flexDirection: "column", gap: 4, height: "100%" }}>
 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: "1rem", fontWeight: 700, color: "var(--foreground)" }}>Win Types</span>
+        <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--foreground)" }}>Win Types</span>
         <Link href="/groups" className="back-link">
           See All ↗
         </Link>
       </div>
 
       {/* Chart + legend */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 0, flex: 1 }}>
 
         {/* Donut */}
-        <svg viewBox="0 0 180 180" style={{ width: 160, height: 160, flexShrink: 0 }}>
+        <svg viewBox="0 0 180 180" style={{ width: 210, height: 210, flexShrink: 0 }}>
           <circle cx={CX} cy={CY} r={R} fill="none" stroke="#E8F0EA" strokeWidth={32} />
           <g transform={`rotate(-90 ${CX} ${CY})`}>
             {SLICES.map(({ key, color }, i) => (
@@ -87,31 +87,31 @@ export default function WinTypeDonut({ played }: { played: Fixture[] }) {
             ))}
           </g>
           <text x={CX} y={CY - 4} textAnchor="middle"
-            style={{ fontSize: 30, fontWeight: 800, fill: "#10241A", fontFamily: "inherit" }}>
+            style={{ fontSize: 30, fontWeight: 400, fill: "var(--foreground)", fontFamily: "inherit", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.03em" }}>
             {goals}
           </text>
           <text x={CX} y={CY + 15} textAnchor="middle"
-            style={{ fontSize: 11, fontWeight: 600, fill: "#374151" }}>
+            style={{ fontSize: 11, fontWeight: 600, fill: "var(--svg-text)" }}>
             goals scored
           </text>
         </svg>
 
         {/* Legend */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 14, flex: 1, paddingLeft: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column", marginLeft: "auto", paddingLeft: 28, paddingRight: 8 }}>
           {SLICES.map(({ key, label, color }) => (
-            <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 10, height: 10, borderRadius: "50%", background: color, flexShrink: 0 }} />
-                <span style={{ fontSize: "0.875rem", color: "var(--foreground)" }}>{label}</span>
+            <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, marginBottom: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ width: 8, height: 8, borderRadius: 0, background: color, flexShrink: 0 }} />
+                <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>{label}</span>
               </div>
-              <span style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--foreground)" }}>
+              <span className="num-lg" style={{ fontSize: "0.9375rem", fontWeight: 400, color: "var(--foreground)" }}>
                 {isEmpty ? "—" : `${((counts[key] / total) * 100).toFixed(0)}%`}
               </span>
             </div>
           ))}
 
           {!isEmpty && (
-            <div style={{ paddingTop: 6, borderTop: "1px solid var(--border)", fontSize: "0.6875rem", color: "var(--text-muted)" }}>
+            <div style={{ paddingTop: 10, marginTop: 4, borderTop: "1px solid var(--border)", fontSize: "0.6875rem", color: "var(--text-faint)" }}>
               {total} group stage matches
             </div>
           )}

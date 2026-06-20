@@ -72,7 +72,7 @@ function GroupStandings({ standings }: { standings: Array<{ name: string; pts: n
   const maxPts = Math.max(...standings.map((s) => s.pts), 1);
 
   return (
-    <div style={{ border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden" }}>
+    <div style={{ border: "1px solid var(--border)", borderRadius: 0, overflow: "hidden" }}>
       <div style={{ padding: "8px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg-page)", borderBottom: "1px solid var(--border)" }}>
         <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: "var(--text-muted)" }}>Projected Standings</span>
         <span style={{ fontSize: "0.6875rem", color: "var(--text-faint)", opacity: 0.5 }}>xPts</span>
@@ -99,8 +99,8 @@ function GroupStandings({ standings }: { standings: Array<{ name: string; pts: n
                 Q
               </span>
             )}
-            <div style={{ borderRadius: 9999, overflow: "hidden", flexShrink: 0, width: 72, height: 4, background: "var(--bg-page)" }}>
-              <div style={{ height: "100%", borderRadius: 9999, width: `${barW}%`, background: qualifies ? "var(--accent)" : "var(--text-faint)" }} />
+            <div style={{ borderRadius: 0, overflow: "hidden", flexShrink: 0, width: 72, height: 4, background: "var(--bg-page)" }}>
+              <div style={{ height: "100%", borderRadius: 0, width: `${barW}%`, background: qualifies ? "var(--accent)" : "var(--text-faint)" }} />
             </div>
             <span style={{ fontSize: "0.75rem", fontWeight: 700, fontFamily: "inherit", width: 28, textAlign: "right", flexShrink: 0, color: qualifies ? "var(--accent)" : "var(--text-muted)" }}>
               {ptsDisplay}
@@ -136,7 +136,7 @@ function MatchCard({ fixture }: { fixture: Fixture }) {
         <span className="sport" style={{ fontSize: "1.5rem", flex: 1, color: "var(--foreground)" }}>
           {fixture.home_team}
         </span>
-        <div style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 600, background: "var(--bg-page)", color: "var(--text-faint)" }}>
+        <div style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 600, background: "var(--bg-page)", color: "var(--text-faint)" }}>
           vs
         </div>
         <span className="sport" style={{ fontSize: "1.5rem", flex: 1, textAlign: "right", color: "var(--foreground)" }}>
@@ -183,7 +183,7 @@ export function UpcomingClient({ fixtures }: { fixtures: Fixture[] }) {
         <button
           onClick={() => setActiveGroup(null)}
           style={{
-            padding: "6px 12px", borderRadius: 8, fontSize: "0.75rem", fontWeight: 600,
+            padding: "6px 12px", borderRadius: 0, fontSize: "0.75rem", fontWeight: 600,
             cursor: "pointer", transition: "all 0.15s",
             background: activeGroup === null ? "var(--accent)" : "var(--bg-page)",
             color: activeGroup === null ? "#ffffff" : "var(--text-muted)",
@@ -199,7 +199,7 @@ export function UpcomingClient({ fixtures }: { fixtures: Fixture[] }) {
               key={g}
               onClick={() => setActiveGroup(active ? null : g)}
               style={{
-                padding: "6px 12px", borderRadius: 8, fontSize: "0.75rem", fontWeight: 600,
+                padding: "6px 12px", borderRadius: 0, fontSize: "0.75rem", fontWeight: 600,
                 cursor: "pointer", transition: "all 0.15s",
                 background: active ? "var(--accent)" : "var(--bg-page)",
                 color: active ? "#ffffff" : "var(--text-muted)",

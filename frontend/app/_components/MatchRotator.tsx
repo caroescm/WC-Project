@@ -199,7 +199,7 @@ function Dots({ total, active }: { total: number; active: number }) {
         <div key={i} style={{
           width: i === active ? 14 : 5,
           height: 5,
-          borderRadius: 3,
+          borderRadius: 0,
           background: i === active ? "var(--accent)" : "var(--border)",
           transition: "width 0.3s ease, background 0.3s ease",
         }} />

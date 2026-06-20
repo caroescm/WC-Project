@@ -18,11 +18,11 @@ function classify(p: Prediction): Bucket {
 const BUCKET_META: { key: Bucket; label: string; color: string }[] = [
   { key: "certain",   label: "Clear Favorite", color: "#1B4332" },
   { key: "moderate",  label: "Moderate",       color: "#A8C3B0" },
-  { key: "uncertain", label: "Toss-Up",        color: "#C24545" },
+  { key: "uncertain", label: "Toss-Up",        color: "#B5483F" },
 ];
 
 const TAG_COLOR = (score: number) =>
-  score > 0.3 ? { bg: "#FAE6E6", text: "#C24545" }
+  score > 0.3 ? { bg: "#F3E3DF", text: "#B5483F" }
   : score > 0.1 ? { bg: "#FEF5DC", text: "#9B6E00" }
   : { bg: "#D4EDE0", text: "#2E8B57" };
 
@@ -56,27 +56,27 @@ export default function UnpredictableGroups({ fixtures }: { fixtures: Fixture[] 
 
   if (groups.length === 0) {
     return (
-      <div className="card" style={{ padding: "20px 24px" }}>
-        <div style={{ fontSize: "1rem", fontWeight: 700, color: "#0e1420" }}>Group Predictability</div>
+      <div className="card" style={{ padding: "10px 14px 14px" }}>
+        <div style={{ fontSize: "1rem", fontWeight: 400, color: "#0e1420" }}>Group Predictability</div>
         <p style={{ fontSize: "0.75rem", color: "var(--text-faint)", marginTop: 8 }}>Awaiting fixture data.</p>
       </div>
     );
   }
 
   return (
-    <div className="card" style={{ padding: "14px 18px", display: "flex", flexDirection: "column", gap: 8, height: "100%" }}>
+    <div className="card" style={{ padding: "10px 14px 14px", display: "flex", flexDirection: "column", gap: 4, height: "100%" }}>
 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: "1rem", fontWeight: 700, color: "#0e1420" }}>Group Predictability</span>
+        <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--foreground)" }}>Group Predictability</span>
         <Link href="/groups" className="back-link">
           See All ↗
         </Link>
       </div>
 
       {/* Rows */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-        {groups.slice(0, 6).map((g, i) => {
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {groups.slice(0, 8).map((g, i) => {
           const tag = TAG_COLOR(g.score);
           return (
             <div key={g.group} style={{
@@ -87,12 +87,12 @@ export default function UnpredictableGroups({ fixtures }: { fixtures: Fixture[] 
             }}>
 
               {/* Group letter */}
-              <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#0e1420", width: 16, flexShrink: 0 }}>
+              <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--foreground)", width: 16, flexShrink: 0 }}>
                 {g.letter}
               </span>
 
               {/* Stacked bar */}
-              <div style={{ flex: 1, display: "flex", height: 8, borderRadius: 4, overflow: "hidden" }}>
+              <div style={{ flex: 1, display: "flex", height: 8, borderRadius: 0, overflow: "hidden" }}>
                 {BUCKET_META.map(({ key, color }) => {
                   const pct = (g[key] / g.total) * 100;
                   if (pct === 0) return null;
@@ -108,7 +108,7 @@ export default function UnpredictableGroups({ fixtures }: { fixtures: Fixture[] 
               <span style={{
                 fontSize: "0.5625rem", fontWeight: 700,
                 background: tag.bg, color: tag.text,
-                borderRadius: 999, padding: "2px 7px",
+                borderRadius: 0, padding: "2px 7px",
                 flexShrink: 0, whiteSpace: "nowrap",
               }}>
                 {TAG_LABEL(g.score)}
@@ -119,11 +119,11 @@ export default function UnpredictableGroups({ fixtures }: { fixtures: Fixture[] 
       </div>
 
       {/* Legend */}
-      <div style={{ display: "flex", gap: 10, paddingTop: 6, borderTop: "1px solid var(--border)" }}>
+      <div style={{ display: "flex", gap: 10, paddingTop: 12, marginTop: "auto", borderTop: "1px solid var(--border)" }}>
         {BUCKET_META.map(({ key, label, color }) => (
-          <div key={key} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <div style={{ width: 8, height: 8, borderRadius: 2, background: color, flexShrink: 0 }} />
-            <span style={{ fontSize: "0.5625rem", color: "#6b7280" }}>{label}</span>
+          <div key={key} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <div style={{ width: 8, height: 8, borderRadius: 0, background: color, flexShrink: 0 }} />
+            <span style={{ fontSize: "0.5625rem", color: "var(--text-muted)" }}>{label}</span>
           </div>
         ))}
       </div>
