@@ -72,115 +72,6 @@ function groupProgress(fixtures: Fixture[]) {
   return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
 }
 
-/* ─── Insight generators ────────────────────── */
-
-function fieldInsight(ranked: [string, SimEntry][]): string | null {
-  if (ranked.length < 3) return null;
-  const [t1, p1] = ranked[0];
-  const [t2, p2] = ranked[1];
-  const [t3, p3] = ranked[2];
-  const gap12 = p1.winner - p2.winner;
-  const gap13 = p1.winner - p3.winner;
-
-  // Only surface when there's something non-obvious to say
-  const finalistTrap = ranked.slice(1, 7).find(([, p]) =>
-    p.winner > 0.04 && p.final / p.winner > 2.6
-  );
-
-  if (gap12 > 0.06)
-    return `${t1} has a clear edge — ${(gap12 * 100).toFixed(1)} points ahead of ${t2}, the largest gap in the simulation.`;
-  if (gap13 < 0.035)
-    return `An unusually open field — ${t1}, ${t2}, and ${t3} are separated by just ${(gap13 * 100).toFixed(1)} percentage points.`;
-  if (finalistTrap) {
-    const [ft, ftp] = finalistTrap;
-    return `${ft} is a persistent finalist — reaching the final in ${(ftp.final * 100).toFixed(0)}% of trials — but converts to a title only ${(ftp.winner * 100).toFixed(1)}% of the time.`;
-  }
-  return null;
-}
-
-// Only annotate exceptions — balanced fixtures and genuine upset risks.
-// Clear favorites need no explanation; the probabilities say it.
-function matchAnnotation(f: Fixture): string | null {
-  const { HOME_WIN, DRAW, AWAY_WIN, home_elo, away_elo } = f.prediction;
-  const favIsHome = HOME_WIN >= AWAY_WIN;
-  const underdog  = favIsHome ? f.away_team : f.home_team;
-  const underdogP = Math.min(HOME_WIN, AWAY_WIN);
-  const eloDiff   = Math.abs(home_elo - away_elo);
-
-  if (DRAW > HOME_WIN && DRAW > AWAY_WIN)
-    return `Draw is the single most likely outcome — neither side holds a clear edge.`;
-  if (underdogP > 0.28 && eloDiff > 80)
-    return `Upset watch — ${underdog} carries ${(underdogP * 100).toFixed(0)}% win probability despite the Elo gap.`;
-  return null;
-}
-
-// Only surface xG insights when the deviation is meaningful (> 1.5 goals).
-// Small deltas are noise at this sample size.
-function xgOverInsight(team: string, delta: number): string | null {
-  if (delta > 3.5)
-    return `${team} has comprehensively outscored projections — the gap is large enough to suggest the model is underrating their attack.`;
-  if (delta > 1.5)
-    return `Finding the net more freely than expected — worth factoring into upcoming fixtures involving ${team}.`;
-  return null;
-}
-
-function xgUnderInsight(team: string, delta: number): string | null {
-  const abs = Math.abs(delta);
-  if (abs > 3.5)
-    return `${team} has significantly underdelivered — the model may have overestimated their firepower going in.`;
-  if (abs > 1.5)
-    return `Struggling to match expected output — either facing stiffer defenses than their Elo implied, or form is weaker than rated.`;
-  return null;
-}
-
-// Only note upsets that are statistically surprising. A 35% underdog winning is not a story.
-function upsetInsight(u: { team: string; prob: number }): string | null {
-  if (u.prob < 0.15)
-    return `${u.team} had just ${(u.prob * 100).toFixed(1)}% win probability — one of the more statistically surprising results of the tournament so far.`;
-  if (u.prob < 0.28)
-    return `${u.team} overturned clear odds at ${(u.prob * 100).toFixed(1)}% — a result the model rated as unlikely.`;
-  return null;
-}
-
-// Only surface trend signal when the recent rate diverges meaningfully from overall.
-// Stable tracking needs no annotation — the chart shows it.
-function accuracyInsight(log: { ok: boolean }[], correct: number, total: number): string | null {
-  if (total < 5) return null;
-  const overall       = correct / total;
-  const recent        = log.slice(-5);
-  const recentCorrect = recent.filter(m => m.ok).length;
-  const recentAcc     = recentCorrect / recent.length;
-
-  if (recentAcc > overall + 0.15)
-    return `Improving recently — ${recentCorrect} of the last ${recent.length} correct, above the ${(overall * 100).toFixed(0)}% overall rate.`;
-  if (recentAcc < overall - 0.15)
-    return `Struggling in recent fixtures — ${recentCorrect} of the last ${recent.length} correct, below the ${(overall * 100).toFixed(0)}% overall rate.`;
-  return null;
-}
-
-/* ─── Section label ─────────────────────────── */
-
-function SectionLabel({ text, href, linkLabel }: { text: string; href?: string; linkLabel?: string }) {
-  return (
-    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
-      <span className="label-upper" style={{ fontSize:"0.6875rem", fontWeight:700, color:"var(--text-faint)" }}>
-        {text}
-      </span>
-      {href && <Link href={href} className="back-link">{linkLabel ?? "See All ↗"}</Link>}
-    </div>
-  );
-}
-
-/* ─── Insight callout ───────────────────────── */
-
-function Insight({ children }: { children: React.ReactNode }) {
-  return (
-    <p style={{ fontSize:"0.8125rem", color:"var(--text-muted)", lineHeight:1.65, margin:0 }}>
-      {children}
-    </p>
-  );
-}
-
 /* ─── Dashboard ─────────────────────────────── */
 
 export default async function Home() {
@@ -203,13 +94,11 @@ export default async function Home() {
 
   const simRanked = Object.entries(simulation).sort(([,a],[,b]) => b.winner - a.winner);
   const [topTeam, topEntry] = simRanked[0] ?? ["—", null];
-  const second    = simRanked[1] ?? null;
 
   const xgEntries = stats ? Object.entries(stats.xgDelta).sort(([,a],[,b]) => b - a) : [];
   const xgOver    = xgEntries[0]  ?? null;
   const xgUnder   = xgEntries.length > 0 ? xgEntries[xgEntries.length - 1] : null;
 
-  const gProgress = groupProgress(fixtures);
   const upsetT    = stats?.upsets[0];
 
   // Per-match log for accuracy chart
@@ -223,14 +112,6 @@ export default async function Home() {
                  : AWAY_WIN >= DRAW && AWAY_WIN >= HOME_WIN ? "AWAY_WIN" : "DRAW";
     return [{ ok: best === actual, home: f.home_team, away: f.away_team, match_number: f.match_number }];
   });
-
-  // Pre-tournament: team projected to score most in their next match
-  const upcomingXgPeak = upcoming.reduce<{ team: string; xg: number; opp: string } | null>((best, f) => {
-    const home = { team: f.home_team, xg: f.prediction.home_xg, opp: f.away_team };
-    const away = { team: f.away_team, xg: f.prediction.away_xg, opp: f.home_team };
-    const pick = home.xg >= away.xg ? home : away;
-    return !best || pick.xg > best.xg ? pick : best;
-  }, null);
 
   // Group of death: highest average winner% among group members
   const groupTeamMap: Record<string, Set<string>> = {};
@@ -249,20 +130,6 @@ export default async function Home() {
     })
     .sort((a, b) => b.avgWin - a.avgWin);
   const deathGroup = groupStrength[0] ?? null;
-
-  // Hero narrative
-  const gap = second ? topEntry!.winner - second[1].winner : 0;
-  const heroConclusion =
-    simRanked.length === 0 ? "Simulation loading"
-    : topEntry!.winner > 0.20 ? `${topTeam} is the clear favorite`
-    : topEntry!.winner > 0.12 ? `${topTeam} leads a crowded field`
-    : `No clear favorite — ${topTeam} edges ahead`;
-
-  const heroDetail = simRanked.length === 0
-    ? "Tournament odds will appear once the simulation is available."
-    : stats
-      ? `${topTeam} leads 3,000 simulations at ${(topEntry!.winner * 100).toFixed(1)}%${gap > 0.05 ? ` — ${(gap * 100).toFixed(1)} points clear of ${second![0]}` : second ? `, with ${second[0]} the nearest challenger at ${(second[1].winner * 100).toFixed(1)}%` : ""}. The model has called ${stats.correct} of ${stats.total} matches correctly (${(stats.correct / stats.total * 100).toFixed(0)}%).`
-      : `${topTeam} leads 3,000 simulations at ${(topEntry!.winner * 100).toFixed(1)}%${gap > 0.05 ? ` — a ${(gap * 100).toFixed(1)}-point edge over the field` : second ? `, narrowly ahead of ${second[0]} at ${(second[1].winner * 100).toFixed(1)}%` : ""}. Accuracy updates as results come in.`;
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
