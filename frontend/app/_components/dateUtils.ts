@@ -18,3 +18,10 @@ export function predictedOutcome(p: { HOME_WIN: number; DRAW: number; AWAY_WIN: 
   if (p.AWAY_WIN >= p.DRAW && p.AWAY_WIN >= p.HOME_WIN) return "Away Win";
   return "Draw";
 }
+
+// Returns the predicted outcome as a key ("HOME_WIN" | "AWAY_WIN" | "DRAW")
+export function bestOutcomeKey(p: { HOME_WIN: number; DRAW: number; AWAY_WIN: number }): "HOME_WIN" | "AWAY_WIN" | "DRAW" {
+  if (p.HOME_WIN >= p.DRAW && p.HOME_WIN >= p.AWAY_WIN) return "HOME_WIN";
+  if (p.AWAY_WIN >= p.DRAW && p.AWAY_WIN >= p.HOME_WIN) return "AWAY_WIN";
+  return "DRAW";
+}

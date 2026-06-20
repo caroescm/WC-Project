@@ -3,19 +3,10 @@ import AccuracyChart from "./_components/AccuracyChart";
 import PerformanceAnalysis from "./_components/PerformanceAnalysis";
 import WinTypeDonut from "./_components/WinTypeDonut";
 import UnpredictableGroups from "./_components/UnpredictableGroups";
-import { parseScore } from "./_components/dateUtils";
+import TournamentBadge from "./_components/TournamentBadge";
+import { parseScore, bestOutcomeKey } from "./_components/dateUtils";
+import { Fixture, BASE } from "./_components/types";
 
-interface Prediction {
-  HOME_WIN: number; DRAW: number; AWAY_WIN: number;
-  home_elo: number; away_elo: number;
-  home_xg: number;  away_xg: number;
-}
-interface Fixture {
-  match_number: number; date: string; location: string;
-  home_team: string;   away_team: string;
-  group: string;       result: string | null;
-  prediction: Prediction;
-}
 type SimEntry = { r32:number; r16:number; qf:number; sf:number; final:number; winner:number };
 type Simulation = Record<string, SimEntry>;
 
@@ -31,8 +22,7 @@ function deriveStats(played: Fixture[]) {
     const [hs, as_] = parsed;
     const { HOME_WIN, DRAW, AWAY_WIN, home_xg, away_xg } = f.prediction;
     const actual = hs > as_ ? "HOME_WIN" : hs < as_ ? "AWAY_WIN" : "DRAW";
-    const best   = HOME_WIN >= DRAW && HOME_WIN >= AWAY_WIN ? "HOME_WIN"
-                 : AWAY_WIN >= DRAW && AWAY_WIN >= HOME_WIN ? "AWAY_WIN" : "DRAW";
+    const best   = bestOutcomeKey(f.prediction);
     if (best === actual) correct++;
     xgDelta[f.home_team]  = (xgDelta[f.home_team]  ?? 0) + (hs  - home_xg);
     xgDelta[f.away_team]  = (xgDelta[f.away_team]  ?? 0) + (as_ - away_xg);
@@ -51,8 +41,8 @@ export default async function Home() {
   let simulation: Simulation = {};
   try {
     [fixtures, simulation] = await Promise.all([
-      fetch(`${process.env.API_URL ?? "https://wc-project-production.up.railway.app"}/fixtures`, { cache:"no-store" }).then(r => r.json()),
-      fetch(`${process.env.API_URL ?? "https://wc-project-production.up.railway.app"}/simulate`,  { next: { revalidate: 3600 } }).then(r => r.json()),
+      fetch(`${BASE}/fixtures`, { cache:"no-store" }).then(r => r.json()),
+      fetch(`${BASE}/simulate`,  { next: { revalidate: 3600 } }).then(r => r.json()),
     ]);
   } catch {}
 
@@ -71,34 +61,24 @@ export default async function Home() {
     const parsed = parseScore(f.result!);
     if (!parsed) return [];
     const [hs, as_] = parsed;
-    const { HOME_WIN, DRAW, AWAY_WIN } = f.prediction;
     const actual = hs > as_ ? "HOME_WIN" : hs < as_ ? "AWAY_WIN" : "DRAW";
-    const best   = HOME_WIN >= DRAW && HOME_WIN >= AWAY_WIN ? "HOME_WIN"
-                 : AWAY_WIN >= DRAW && AWAY_WIN >= HOME_WIN ? "AWAY_WIN" : "DRAW";
+    const best   = bestOutcomeKey(f.prediction);
     return [{ ok: best === actual, home: f.home_team, away: f.away_team, match_number: f.match_number }];
   });
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+    <div style={{ display:"flex", flexDirection:"column", gap:8, height:"calc(100vh - 88px)", overflow:"hidden" }}>
 
       {/* ── PAGE HEADER ────────────────────────────────────────── */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
         <h1 style={{ margin:0, fontSize:"1.375rem", fontWeight:700, letterSpacing:"-0.02em", color:"var(--foreground)" }}>
           World Cup 2026
         </h1>
-        <div className="date-badge" style={{ display:"flex", alignItems:"center", gap:6, fontSize:"0.8125rem", color:"var(--text-muted)", background:"var(--card-bg)", border:"1px solid var(--border-soft)", borderRadius: 0, padding:"8px 12px" }}>
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="1" y="2.5" width="14" height="12.5" rx="2" stroke="currentColor" strokeWidth="1.4"/>
-            <path d="M1 6.5H15" stroke="currentColor" strokeWidth="1.4"/>
-            <path d="M5 1V4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-            <path d="M11 1V4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-          </svg>
-          <span>June 11 – July 19</span>
-        </div>
+        <TournamentBadge />
       </div>
 
       {/* ── 1. KPI CARDS ───────────────────────────────────────── */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(5, 1fr)", gap:8 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(5, 1fr)", gap:8, flexShrink:0 }}>
 
         {/* 1 — Tournament Favorite */}
         <div className="kpi-card-dark" style={{ background:"#1B4332", borderRadius: 0, padding:"8px 16px 12px", display:"flex", flexDirection:"column", height:80 }}>
@@ -168,18 +148,17 @@ export default async function Home() {
       </div>
 
       {/* ── 2. CHARTS ──────────────────────────────────────────── */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, alignItems:"stretch", marginTop:8.5 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, flex:1, minHeight:0 }}>
         <TournamentOutlook simulation={simulation} />
         <AccuracyChart matchLog={matchLog} />
       </div>
 
       {/* ── 3. BOTTOM PANELS ───────────────────────────────────── */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, alignItems:"stretch", marginTop:8.5 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, flex:1, minHeight:0 }}>
         <WinTypeDonut played={played} />
         <PerformanceAnalysis teamXG={stats?.teamXG ?? {}} teamGoals={stats?.teamGoals ?? {}} />
         <UnpredictableGroups fixtures={fixtures} />
       </div>
-
 
     </div>
   );

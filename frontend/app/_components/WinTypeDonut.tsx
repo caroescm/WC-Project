@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+
 import { parseScore } from "./dateUtils";
 
 interface Prediction { HOME_WIN: number; DRAW: number; AWAY_WIN: number }
@@ -54,9 +54,6 @@ export default function WinTypeDonut({ played }: { played: Fixture[] }) {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--foreground)" }}>Win Types</span>
-        <Link href="/groups" className="back-link">
-          See All ↗
-        </Link>
       </div>
 
       {/* Chart + legend */}

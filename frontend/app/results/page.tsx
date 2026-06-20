@@ -1,10 +1,6 @@
-import { parseScore, predictedOutcome } from "../_components/dateUtils";
+import { parseScore, predictedOutcome, bestOutcomeKey } from "../_components/dateUtils";
 import ResultsTable from "./ResultsTable";
-
-interface Prediction { HOME_WIN: number; DRAW: number; AWAY_WIN: number; home_xg: number; away_xg: number }
-interface Fixture { match_number: number; date: string; location: string; home_team: string; away_team: string; group: string; result: string | null; prediction: Prediction }
-
-const BASE = process.env.API_URL ?? "https://wc-project-production.up.railway.app";
+import { Fixture, BASE } from "../_components/types";
 
 export default async function ResultsPage() {
   let fixtures: Fixture[] = [];
@@ -19,10 +15,9 @@ export default async function ResultsPage() {
     const parsed = parseScore(f.result!);
     if (!parsed) return;
     const [hs, as_] = parsed;
-    const { HOME_WIN, DRAW, AWAY_WIN } = f.prediction;
+    const { DRAW } = f.prediction;
     const actual = hs > as_ ? "HOME_WIN" : hs < as_ ? "AWAY_WIN" : "DRAW";
-    const best   = HOME_WIN >= DRAW && HOME_WIN >= AWAY_WIN ? "HOME_WIN"
-                 : AWAY_WIN >= DRAW && AWAY_WIN >= HOME_WIN ? "AWAY_WIN" : "DRAW";
+    const best   = bestOutcomeKey(f.prediction);
     if (best === actual) correct++;
     if (hs > as_) homeWins++;
     if (actual === "DRAW") drawProbs.push(DRAW);

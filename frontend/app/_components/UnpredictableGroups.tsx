@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+
 
 interface Prediction { HOME_WIN: number; DRAW: number; AWAY_WIN: number }
 interface Fixture { group: string; prediction: Prediction }
@@ -69,9 +69,6 @@ export default function UnpredictableGroups({ fixtures }: { fixtures: Fixture[] 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--foreground)" }}>Group Predictability</span>
-        <Link href="/groups" className="back-link">
-          See All ↗
-        </Link>
       </div>
 
       {/* Rows */}
