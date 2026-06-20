@@ -1,14 +1,10 @@
 import Link from "next/link";
+import { parseScore } from "../_components/dateUtils";
 
 interface Prediction { HOME_WIN: number; DRAW: number; AWAY_WIN: number; home_xg: number; away_xg: number; }
 interface Fixture { match_number: number; date: string; home_team: string; away_team: string; group: string; result: string | null; prediction: Prediction; }
 
 const BASE = process.env.API_URL ?? "https://wc-project-production.up.railway.app";
-
-function parseScore(r: string): [number, number] | null {
-  const m = r.match(/^(\d+)\s*-\s*(\d+)$/);
-  return m ? [+m[1], +m[2]] : null;
-}
 function predictedOutcome(p: Prediction): string {
   if (p.HOME_WIN >= p.DRAW && p.HOME_WIN >= p.AWAY_WIN) return "Home Win";
   if (p.AWAY_WIN >= p.DRAW && p.AWAY_WIN >= p.HOME_WIN) return "Away Win";

@@ -1,15 +1,11 @@
 import WinTypeDonut from "../_components/WinTypeDonut";
 import UnpredictableGroups from "../_components/UnpredictableGroups";
+import { parseScore } from "../_components/dateUtils";
 
 interface Prediction { HOME_WIN: number; DRAW: number; AWAY_WIN: number; home_xg: number; away_xg: number }
 interface Fixture { match_number: number; date: string; home_team: string; away_team: string; group: string; result: string | null; prediction: Prediction }
 
 const BASE = process.env.API_URL ?? "https://wc-project-production.up.railway.app";
-
-function parseScore(r: string): [number, number] | null {
-  const m = r.match(/^(\d+)\s*-\s*(\d+)$/);
-  return m ? [+m[1], +m[2]] : null;
-}
 
 interface StandingRow { team: string; played: number; w: number; d: number; l: number; gf: number; ga: number; gd: number; pts: number }
 

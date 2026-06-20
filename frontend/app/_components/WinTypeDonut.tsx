@@ -2,14 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { parseScore } from "./dateUtils";
 
 interface Prediction { HOME_WIN: number; DRAW: number; AWAY_WIN: number }
 interface Fixture { group: string; result: string | null; prediction: Prediction }
-
-function parseResult(r: string): [number, number] | null {
-  const m = r.match(/^(\d+)\s*-\s*(\d+)$/);
-  return m ? [parseInt(m[1]), parseInt(m[2])] : null;
-}
 
 const SLICES = [
   { key: "home",  label: "Home Wins", color: "#C9981A" },
@@ -29,7 +25,7 @@ export default function WinTypeDonut({ played }: { played: Fixture[] }) {
 
   let home = 0, draw = 0, away = 0, goals = 0;
   for (const f of groupPlayed) {
-    const p = parseResult(f.result!);
+    const p = parseScore(f.result!);
     if (!p) continue;
     const [hs, as_] = p;
     goals += hs + as_;
