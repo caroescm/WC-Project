@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 
 type SimEntry = { r32: number; r16: number; qf: number; sf: number; final: number; winner: number };
 type Filter   = "all" | "winner" | "final" | "sf";
@@ -80,9 +79,6 @@ export default function TournamentOutlook({ simulation, maxTeams = 7 }: { simula
               </button>
             ))}
           </div>
-          <Link href="/predictions" className="back-link">
-            See All ↗
-          </Link>
         </div>
       </div>
 

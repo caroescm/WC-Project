@@ -1,6 +1,5 @@
 import TournamentOutlook from "../_components/TournamentOutlook";
 import { UpcomingClient } from "../upcoming/UpcomingClient";
-import TournamentBadge from "../_components/TournamentBadge";
 
 type SimEntry = { r32: number; r16: number; qf: number; sf: number; final: number; winner: number };
 type Simulation = Record<string, SimEntry>;
@@ -31,15 +30,12 @@ export default async function PredictionsPage() {
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 
       {/* Page header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <h1 style={{ margin: 0, fontSize: "1.75rem", fontWeight: 700, letterSpacing: "-0.02em", color: "var(--foreground)" }}>
-          Predictions
-        </h1>
-        <TournamentBadge />
-      </div>
+      <h1 style={{ margin: 0, fontSize: "1.75rem", fontWeight: 700, letterSpacing: "-0.02em", color: "var(--foreground)" }}>
+        Predictions
+      </h1>
 
-      {/* Monte Carlo chart — show all teams */}
-      <TournamentOutlook simulation={simulation} maxTeams={ranked.length} />
+      {/* Monte Carlo chart — top 15 teams */}
+      <TournamentOutlook simulation={simulation} maxTeams={15} />
 
       {/* Full simulation table */}
       {ranked.length > 0 && (
