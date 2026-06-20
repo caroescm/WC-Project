@@ -50,6 +50,7 @@ export default async function ResultsPage() {
       d: Math.round(f.prediction.DRAW * 100),
       a: Math.round(f.prediction.AWAY_WIN * 100),
       pred, actual, ok,
+      group: f.group,
     }];
   });
 

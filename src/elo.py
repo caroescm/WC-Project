@@ -5,6 +5,47 @@ from .config import K_FACTORS, name_map
 
 BASE_DIR = Path(__file__).parent.parent
 HOME_ADVANTAGE = 100
+EWM_SPAN       = 10
+EWM_ALPHA      = 2 / (EWM_SPAN + 1)
+EWM_SPAN_SHORT = 5
+EWM_ALPHA_SHORT = 2 / (EWM_SPAN_SHORT + 1)
+
+
+def _update_rolling_stats(team: str, goals_for: int, goals_against: int,
+                           opponent_elo: float, match_date: str):
+    """Append one EWM-updated row to team_rolling_stats.csv for the given team."""
+    path = BASE_DIR / "data/processed/team_rolling_stats.csv"
+    stats = pd.read_csv(path, parse_dates=["date"])
+
+    opp_weight   = opponent_elo / 1500.0
+    weighted_gf  = goals_for    * opp_weight
+    weighted_ga  = goals_against * opp_weight
+    win          = 1.0 if goals_for > goals_against else (0.5 if goals_for == goals_against else 0.0)
+    gdiff        = float(goals_for - goals_against)
+
+    team_rows = stats[stats["team"] == team].sort_values("date")
+    if team_rows.empty:
+        return  # no prior stats — skip rather than invent a baseline
+
+    prev = team_rows.iloc[-1]
+    new_attack        = float(prev["attack"])        * (1 - EWM_ALPHA)       + weighted_gf * EWM_ALPHA
+    new_defense       = float(prev["defense"])       * (1 - EWM_ALPHA)       + weighted_ga * EWM_ALPHA
+    new_attack_short  = float(prev.get("attack_short",  prev["attack"]))  * (1 - EWM_ALPHA_SHORT) + weighted_gf * EWM_ALPHA_SHORT
+    new_defense_short = float(prev.get("defense_short", prev["defense"])) * (1 - EWM_ALPHA_SHORT) + weighted_ga * EWM_ALPHA_SHORT
+    new_win_rate      = float(prev.get("win_rate",  0.4)) * (1 - EWM_ALPHA) + win   * EWM_ALPHA
+    new_goal_diff     = float(prev.get("goal_diff", 0.0)) * (1 - EWM_ALPHA) + gdiff * EWM_ALPHA
+
+    new_row = pd.DataFrame([{
+        "date":          match_date,
+        "team":          team,
+        "attack":        new_attack,
+        "defense":       new_defense,
+        "attack_short":  new_attack_short,
+        "defense_short": new_defense_short,
+        "win_rate":      new_win_rate,
+        "goal_diff":     new_goal_diff,
+    }])
+    pd.concat([stats, new_row], ignore_index=True).to_csv(path, index=False)
 
 
 def sync_elos_from_fixtures():
@@ -106,6 +147,11 @@ def register_result(match_number: int, home_score: int, away_score: int):
     elo_current.loc[elo_current["team"] == home_team, "elo"] = new_home_elo
     elo_current.loc[elo_current["team"] == away_team, "elo"] = new_away_elo
     elo_current.to_csv(elo_path, index=False)
+
+    # Update rolling attack/defense stats for both teams
+    match_date = str(row["Date"]).split()[0]
+    _update_rolling_stats(home_team, home_score, away_score, away_elo, match_date)
+    _update_rolling_stats(away_team, away_score, home_score, home_elo, match_date)
 
     # Update result in fixtures (cast to object first so string assignment works on an all-null column)
     fixtures["Result"] = fixtures["Result"].astype(object)

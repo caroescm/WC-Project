@@ -285,7 +285,7 @@ table {
   transition: background 0.12s ease;
 }
 .table-row:hover {
-  background: #ede9f8;
+  background: var(--accent-dim);
 }
 
 /* ─── Progress bar ──────────────────────────── */
