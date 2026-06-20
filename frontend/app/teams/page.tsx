@@ -1,5 +1,6 @@
 import PerformanceAnalysis from "../_components/PerformanceAnalysis";
 import { parseScore } from "../_components/dateUtils";
+import TournamentBadge from "../_components/TournamentBadge";
 
 interface Prediction { HOME_WIN: number; DRAW: number; AWAY_WIN: number; home_xg: number; away_xg: number }
 interface Fixture { match_number: number; date: string; home_team: string; away_team: string; group: string; result: string | null; prediction: Prediction }
@@ -42,15 +43,7 @@ export default async function TeamsPage() {
         <h1 style={{ margin: 0, fontSize: "1.75rem", fontWeight: 700, letterSpacing: "-0.02em", color: "var(--foreground)" }}>
           Teams
         </h1>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.8125rem", color: "var(--text-muted)", background: "#fff", border: "1px solid var(--border)", borderRadius: 0, padding: "6px 12px" }}>
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-            <rect x="1" y="2.5" width="14" height="12.5" rx="2" stroke="currentColor" strokeWidth="1.4"/>
-            <path d="M1 6.5H15" stroke="currentColor" strokeWidth="1.4"/>
-            <path d="M5 1V4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-            <path d="M11 1V4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-          </svg>
-          <span>June 11 – July 19</span>
-        </div>
+        <TournamentBadge />
       </div>
 
       {/* Dumbbell chart */}

@@ -1,6 +1,7 @@
 import WinTypeDonut from "../_components/WinTypeDonut";
 import UnpredictableGroups from "../_components/UnpredictableGroups";
 import { parseScore } from "../_components/dateUtils";
+import TournamentBadge from "../_components/TournamentBadge";
 
 interface Prediction { HOME_WIN: number; DRAW: number; AWAY_WIN: number; home_xg: number; away_xg: number }
 interface Fixture { match_number: number; date: string; home_team: string; away_team: string; group: string; result: string | null; prediction: Prediction }
