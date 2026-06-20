@@ -1,8 +1,9 @@
 import Link from "next/link";
 import TournamentOutlook from "./_components/TournamentOutlook";
+import AccuracyChart from "./_components/AccuracyChart";
 import PerformanceAnalysis from "./_components/PerformanceAnalysis";
-import MatchdaysCard from "./_components/MatchdaysCard";
-import MatchRotator from "./_components/MatchRotator";
+import WinTypeDonut from "./_components/WinTypeDonut";
+import UnpredictableGroups from "./_components/UnpredictableGroups";
 
 interface Prediction {
   HOME_WIN: number; DRAW: number; AWAY_WIN: number;
@@ -165,7 +166,7 @@ function SectionLabel({ text, href, linkLabel }: { text: string; href?: string; 
       <span style={{ fontSize:"0.6875rem", fontWeight:700, color:"var(--text-faint)", letterSpacing:"0.07em", textTransform:"uppercase" }}>
         {text}
       </span>
-      {href && <Link href={href} className="back-link">{linkLabel ?? "See all →"}</Link>}
+      {href && <Link href={href} className="back-link">{linkLabel ?? "See All ↗"}</Link>}
     </div>
   );
 }
@@ -220,7 +221,7 @@ export default async function Home() {
     const actual = hs > as_ ? "HOME_WIN" : hs < as_ ? "AWAY_WIN" : "DRAW";
     const best   = HOME_WIN >= DRAW && HOME_WIN >= AWAY_WIN ? "HOME_WIN"
                  : AWAY_WIN >= DRAW && AWAY_WIN >= HOME_WIN ? "AWAY_WIN" : "DRAW";
-    return [{ ok: best === actual, home: f.home_team, away: f.away_team }];
+    return [{ ok: best === actual, home: f.home_team, away: f.away_team, match_number: f.match_number }];
   });
 
   // Pre-tournament: team projected to score most in their next match
@@ -264,11 +265,11 @@ export default async function Home() {
       : `${topTeam} leads 3,000 simulations at ${(topEntry!.winner * 100).toFixed(1)}%${gap > 0.05 ? ` — a ${(gap * 100).toFixed(1)}-point edge over the field` : second ? `, narrowly ahead of ${second[0]} at ${(second[1].winner * 100).toFixed(1)}%` : ""}. Accuracy updates as results come in.`;
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", gap:24 }}>
+    <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
 
       {/* ── PAGE HEADER ────────────────────────────────────────── */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        <h1 style={{ margin:0, fontSize:"1.75rem", fontWeight:800, letterSpacing:"-0.02em", color:"var(--foreground)" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:4 }}>
+        <h1 style={{ margin:0, fontSize:"1.375rem", fontWeight:700, letterSpacing:"-0.02em", color:"var(--foreground)" }}>
           World Cup 2026
         </h1>
         <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:"0.8125rem", color:"var(--text-muted)", background:"#ffffff", border:"1px solid var(--border)", borderRadius:8, padding:"6px 12px" }}>
@@ -282,248 +283,99 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* ── 1. MATCHDAYS + MODEL SNAPSHOT ──────────────────────── */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 2fr", gap:24, alignItems:"start" }}>
+      {/* ── 1. KPI CARDS ───────────────────────────────────────── */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(5, 1fr)", gap:6 }}>
 
-        {/* Model snapshot — right 1fr */}
-        <div className="card" style={{ padding:"24px 28px", display:"flex", flexDirection:"column", justifyContent:"center", gap:20 }}>
-          {topEntry && (
-            <div>
-              <div style={{ fontSize:"0.6875rem", fontWeight:700, color:"var(--text-faint)", letterSpacing:"0.07em", textTransform:"uppercase", marginBottom:8 }}>
-                Tournament Favorite
-              </div>
-              <div className="sport" style={{ fontSize:"2.5rem", color:"var(--accent)", lineHeight:1 }}>
-                {(topEntry.winner * 100).toFixed(1)}%
-              </div>
-              <div style={{ fontSize:"0.8125rem", color:"var(--text-muted)", marginTop:4 }}>
-                {topTeam} to win
-              </div>
-              {second && (
-                <div style={{ fontSize:"0.75rem", color:"var(--text-faint)", marginTop:6 }}>
-                  {second[0]} {(second[1].winner * 100).toFixed(1)}%
-                </div>
-              )}
-            </div>
-          )}
-          {stats && (
-            <div>
-              <div style={{ fontSize:"0.6875rem", fontWeight:700, color:"var(--text-faint)", letterSpacing:"0.07em", textTransform:"uppercase", marginBottom:8 }}>
-                Model Accuracy
-              </div>
-              <div className="sport" style={{ fontSize:"2.5rem", lineHeight:1 }}>
-                {(stats.correct / stats.total * 100).toFixed(0)}%
-              </div>
-              <div style={{ fontSize:"0.75rem", color:"var(--text-faint)", marginTop:4 }}>
-                {stats.correct} of {stats.total} correct
-              </div>
-            </div>
-          )}
-        </div>
-
-        <MatchdaysCard matchesPlayed={played.length} daysElapsed={daysElapsed} />
-      </div>
-
-      {/* ── 2. TOURNAMENT OUTLOOK ──────────────────────────────── */}
-      <TournamentOutlook simulation={simulation} />
-
-      {/* ── 3. PERFORMANCE ANALYSIS + KEY CHANGES ──────────────── */}
-      <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:20, alignItems:"stretch" }}>
-
-        {/* Dumbbell chart */}
-        <PerformanceAnalysis
-          teamXG={stats?.teamXG ?? {}}
-          teamGoals={stats?.teamGoals ?? {}}
-        />
-
-        {/* Key Changes — 3 separate cards stacked */}
-        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-
-          {/* Outperforming */}
-          <div className="card" style={{ padding:"16px 20px", flex:1 }}>
-            <div style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--positive)", letterSpacing:"0.05em", textTransform:"uppercase", marginBottom:8 }}>
-              Outperforming
-            </div>
-            {xgOver ? (
-              <>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline" }}>
-                  <span style={{ fontSize:"0.9375rem", fontWeight:600 }}>{xgOver[0]}</span>
-                  <span style={{ fontSize:"1.125rem", fontWeight:700, color:"var(--positive)" }}>+{xgOver[1].toFixed(1)} goals</span>
-                </div>
-                {xgOverInsight(xgOver[0], xgOver[1]) && <Insight>{xgOverInsight(xgOver[0], xgOver[1])}</Insight>}
-              </>
-            ) : (
-              <span style={{ fontSize:"0.8125rem", color:"var(--text-faint)" }}>Awaiting results.</span>
-            )}
-          </div>
-
-          {/* Underperforming */}
-          <div className="card" style={{ padding:"16px 20px", flex:1 }}>
-            <div style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--negative)", letterSpacing:"0.05em", textTransform:"uppercase", marginBottom:8 }}>
-              Underperforming
-            </div>
-            {xgUnder ? (
-              <>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline" }}>
-                  <span style={{ fontSize:"0.9375rem", fontWeight:600 }}>{xgUnder[0]}</span>
-                  <span style={{ fontSize:"1.125rem", fontWeight:700, color:"var(--negative)" }}>{xgUnder[1].toFixed(1)} goals</span>
-                </div>
-                {xgUnderInsight(xgUnder[0], xgUnder[1]) && <Insight>{xgUnderInsight(xgUnder[0], xgUnder[1])}</Insight>}
-              </>
-            ) : (
-              <span style={{ fontSize:"0.8125rem", color:"var(--text-faint)" }}>Awaiting results.</span>
-            )}
-          </div>
-
-          {/* Biggest Upset */}
-          <div className="card" style={{ padding:"16px 20px", flex:1 }}>
-            <div style={{ fontSize:"0.6875rem", fontWeight:600, color:"var(--text-faint)", letterSpacing:"0.05em", textTransform:"uppercase", marginBottom:8 }}>
-              Biggest Upset
-            </div>
-            {upsetT ? (
-              <>
-                <div style={{ fontSize:"0.875rem", fontWeight:500, marginBottom:4 }}>
-                  {upsetT.home} {upsetT.score} {upsetT.away}
-                </div>
-                <span style={{ fontSize:"0.75rem", color:"var(--negative)" }}>
-                  winner at {(upsetT.prob * 100).toFixed(1)}% odds
-                </span>
-                {upsetInsight(upsetT) && <Insight>{upsetInsight(upsetT)}</Insight>}
-              </>
-            ) : (
-              <span style={{ fontSize:"0.8125rem", color:"var(--text-faint)" }}>Awaiting results.</span>
-            )}
-          </div>
-
-        </div>
-      </div>
-
-      {/* ── 4. UPCOMING + RESULTS ──────────────────────────────── */}
-      <MatchRotator upcoming={upcoming} played={played} />
-
-      {/* ── 4. PREDICTION ACCURACY ─────────────────────────────── */}
-      <div>
-        <SectionLabel text="Prediction Accuracy" href="/accuracy" linkLabel="Full report →" />
-        <div>
-          {matchLog.length === 0 ? (
-            <span style={{ fontSize:"0.8125rem", color:"var(--text-faint)" }}>Awaiting first tournament results.</span>
-          ) : (() => {
-            const W = 540, H = 70;
-            const PAD = { t: 10, r: 16, b: 14, l: 36 };
-            const cW = W - PAD.l - PAD.r;
-            const cH = H - PAD.t - PAD.b;
-            const n  = matchLog.length;
-
-            let runCorrect = 0;
-            const pts = matchLog.map(({ ok }, i) => {
-              if (ok) runCorrect++;
-              const acc = runCorrect / (i + 1);
-              const x   = PAD.l + (n === 1 ? cW / 2 : (i / (n - 1)) * cW);
-              const y   = PAD.t + (1 - acc) * cH;
-              return { x, y, ok, acc };
-            });
-
-            const polyline  = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-            const finalAcc  = pts[pts.length - 1].acc;
-            const refs      = [{ pct:1.0, label:"100%" }, { pct:0.5, label:"50%" }, { pct:0.0, label:"0%" }];
-            const chartNote = accuracyInsight(matchLog, stats!.correct, stats!.total);
-
-            return (
-              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                <div style={{ display:"flex", alignItems:"flex-start", gap:20 }}>
-                  <div style={{ flexShrink:0, paddingTop:4 }}>
-                    <div className="sport" style={{ fontSize:"1.5rem", lineHeight:1, color:"var(--accent)" }}>
-                      {(finalAcc * 100).toFixed(0)}%
-                    </div>
-                    <div style={{ fontSize:"0.75rem", color:"var(--text-faint)", marginTop:4 }}>
-                      {stats!.correct} / {stats!.total} correct
-                    </div>
-                  </div>
-
-                  <svg viewBox={`0 0 ${W} ${H}`} style={{ width:"100%", height:H, display:"block", overflow:"visible" }}>
-                    {refs.map(({ pct, label }) => {
-                      const y = PAD.t + (1 - pct) * cH;
-                      return (
-                        <g key={label}>
-                          <line x1={PAD.l} y1={y} x2={PAD.l + cW} y2={y}
-                            stroke="var(--border)" strokeWidth="1"
-                            strokeDasharray={pct === 0.5 ? "3 3" : undefined} />
-                          <text x={PAD.l - 6} y={y + 4} textAnchor="end"
-                            style={{ fontSize:9, fill:"var(--text-faint)", fontFamily:"monospace" }}>
-                            {label}
-                          </text>
-                        </g>
-                      );
-                    })}
-                    {n > 1 && (
-                      <polyline points={polyline} fill="none"
-                        stroke="var(--accent)" strokeWidth="1.5" strokeLinejoin="round" opacity="0.5" />
-                    )}
-                    {pts.map(({ x, y, ok }, i) => (
-                      <circle key={i} cx={x.toFixed(1)} cy={y.toFixed(1)} r="3"
-                        fill={ok ? "var(--positive)" : "var(--negative)"}
-                        stroke="#ffffff" strokeWidth="1.5" />
-                    ))}
-                    <text x={PAD.l} y={H - 2} textAnchor="middle"
-                      style={{ fontSize:9, fill:"var(--text-faint)" }}>1</text>
-                    {n > 1 && (
-                      <text x={PAD.l + cW} y={H - 2} textAnchor="middle"
-                        style={{ fontSize:9, fill:"var(--text-faint)" }}>{n}</text>
-                    )}
-                  </svg>
-
-                  <div style={{ flexShrink:0, display:"flex", flexDirection:"column", gap:8, paddingTop:4 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                      <div style={{ width:8, height:8, borderRadius:"50%", background:"var(--positive)", flexShrink:0 }} />
-                      <span style={{ fontSize:"0.75rem", color:"var(--text-faint)" }}>Correct</span>
-                    </div>
-                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                      <div style={{ width:8, height:8, borderRadius:"50%", background:"var(--negative)", flexShrink:0 }} />
-                      <span style={{ fontSize:"0.75rem", color:"var(--text-faint)" }}>Wrong</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Only render trend annotation when there's a meaningful signal */}
-                {chartNote && (
-                  <div style={{ paddingTop:4 }}>
-                    <Insight>{chartNote}</Insight>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-        </div>
-      </div>
-
-      {/* ── 5. GROUP ANALYSIS ──────────────────────────────────── */}
-      <div>
-        <SectionLabel text="Group Progress" />
-        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-          {deathGroup && played.length === 0 && (
-            <Insight>
-              {deathGroup.group} is the toughest draw on paper — {deathGroup.strongest.slice(0, 2).join(" and ")} give it the highest average tournament win probability of any group.
-            </Insight>
-          )}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:"4px 0" }}>
-            {gProgress.length === 0 ? (
-              <span className="empty" style={{ gridColumn:"1 / -1" }}>No fixture data</span>
-            ) : gProgress.map(([group, { played: p, total: t }]) => {
-              const letter = group.replace("Group ", "");
-              const done   = p === t;
-              return (
-                <div key={group} style={{ display:"flex", alignItems:"baseline", gap:5 }}>
-                  <span style={{ fontSize:"0.75rem", fontWeight:700, color: done ? "var(--positive)" : "var(--foreground)" }}>
-                    {letter}
-                  </span>
-                  <span style={{ fontSize:"0.6875rem", color: done ? "var(--positive)" : "var(--text-faint)", fontVariantNumeric:"tabular-nums" }}>
-                    {p}/{t}
-                  </span>
-                </div>
-              );
-            })}
+        {/* 1 — Tournament Favorite (hero: deep pitch green) */}
+        <div style={{ background:"#1B4332", borderRadius:16, padding:"10px 16px 8px", display:"flex", flexDirection:"column", height:78 }}>
+          <span style={{ fontSize:"0.625rem", fontWeight:700, color:"rgba(255,255,255,0.5)", letterSpacing:"0.07em", textTransform:"uppercase" }}>
+            Tournament Favorite
+          </span>
+          <span style={{ fontSize:"1.375rem", fontWeight:700, color:"#ffffff", letterSpacing:"-0.02em", lineHeight:1.15, marginTop:4 }}>
+            {topTeam ?? "—"}
+          </span>
+          <div style={{ marginTop:0, display:"flex", justifyContent:"flex-end" }}>
+            <span style={{ fontSize:"0.6875rem", color:"rgba(255,255,255,0.45)" }}>
+              {topEntry ? `${(topEntry.winner * 100).toFixed(1)}% to win` : "—"}
+            </span>
           </div>
         </div>
+
+        {/* 2 — Outperforming (white + green accent) */}
+        <div style={{ background:"#ffffff", borderRadius:16, padding:"10px 16px 8px", display:"flex", flexDirection:"column", height:78, border:"1px solid var(--border)" }}>
+          <span style={{ fontSize:"0.625rem", fontWeight:700, color:"#2E8B57", letterSpacing:"0.07em", textTransform:"uppercase" }}>
+            Outperforming
+          </span>
+          <span style={{ fontSize:"1.375rem", fontWeight:700, color:"#10241A", letterSpacing:"-0.02em", lineHeight:1.15, marginTop:4 }}>
+            {xgOver ? xgOver[0] : "—"}
+          </span>
+          <div style={{ marginTop:0, display:"flex", justifyContent:"flex-end" }}>
+            <span style={{ fontSize:"0.6875rem", color:"#2E8B57" }}>
+              {xgOver ? `+${xgOver[1].toFixed(1)} goals vs xG` : "awaiting results"}
+            </span>
+          </div>
+        </div>
+
+        {/* 3 — Underperforming (white + red accent) */}
+        <div style={{ background:"#ffffff", borderRadius:16, padding:"10px 16px 8px", display:"flex", flexDirection:"column", height:78, border:"1px solid var(--border)" }}>
+          <span style={{ fontSize:"0.625rem", fontWeight:700, color:"#C24545", letterSpacing:"0.07em", textTransform:"uppercase" }}>
+            Underperforming
+          </span>
+          <span style={{ fontSize:"1.375rem", fontWeight:700, color:"#10241A", letterSpacing:"-0.02em", lineHeight:1.15, marginTop:4 }}>
+            {xgUnder ? xgUnder[0] : "—"}
+          </span>
+          <div style={{ marginTop:0, display:"flex", justifyContent:"flex-end" }}>
+            <span style={{ fontSize:"0.6875rem", color:"#C24545" }}>
+              {xgUnder ? `${xgUnder[1].toFixed(1)} goals vs xG` : "awaiting results"}
+            </span>
+          </div>
+        </div>
+
+        {/* 4 — Prediction Accuracy (white + gold accent) */}
+        <div style={{ background:"#ffffff", borderRadius:16, padding:"10px 16px 8px", display:"flex", flexDirection:"column", height:78, border:"1px solid var(--border)" }}>
+          <span style={{ fontSize:"0.625rem", fontWeight:700, color:"#C9981A", letterSpacing:"0.07em", textTransform:"uppercase" }}>
+            Prediction Accuracy
+          </span>
+          <span style={{ fontSize:"1.75rem", fontWeight:700, color:"#10241A", letterSpacing:"-0.02em", lineHeight:1, marginTop:4 }}>
+            {stats ? `${(stats.correct / stats.total * 100).toFixed(0)}%` : "—"}
+          </span>
+          <div style={{ marginTop:0, display:"flex", justifyContent:"flex-end" }}>
+            <span style={{ fontSize:"0.6875rem", color:"#C9981A" }}>
+              {stats ? `${stats.correct} of ${stats.total} correct` : "awaiting results"}
+            </span>
+          </div>
+        </div>
+
+        {/* 5 — Matches Remaining (white + sage accent) */}
+        <div style={{ background:"#ffffff", borderRadius:16, padding:"10px 16px 8px", display:"flex", flexDirection:"column", height:78, border:"1px solid var(--border)" }}>
+          <span style={{ fontSize:"0.625rem", fontWeight:700, color:"#3D6B52", letterSpacing:"0.07em", textTransform:"uppercase" }}>
+            Matches Remaining
+          </span>
+          <span style={{ fontSize:"1.75rem", fontWeight:700, color:"#10241A", letterSpacing:"-0.02em", lineHeight:1, marginTop:4 }}>
+            {upcoming.length}
+          </span>
+          <div style={{ marginTop:0, display:"flex", justifyContent:"flex-end" }}>
+            <span style={{ fontSize:"0.6875rem", color:"#3D6B52" }}>
+              {played.length} played
+            </span>
+          </div>
+        </div>
+
       </div>
+
+      {/* ── 2. CHARTS ──────────────────────────────────────────── */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6, alignItems:"stretch", marginTop:4 }}>
+        <TournamentOutlook simulation={simulation} />
+        <AccuracyChart matchLog={matchLog} />
+      </div>
+
+      {/* ── 3. BOTTOM PANELS ───────────────────────────────────── */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:6, alignItems:"stretch", marginTop:4 }}>
+        <WinTypeDonut played={played} />
+        <PerformanceAnalysis teamXG={stats?.teamXG ?? {}} teamGoals={stats?.teamGoals ?? {}} />
+        <UnpredictableGroups fixtures={fixtures} />
+      </div>
+
 
     </div>
   );

@@ -65,7 +65,7 @@ export default async function UpsetsPage() {
               {upsets.map((u, i) => (
                 <tr key={i} className="table-row">
                   <td className="table-cell">{u.match}</td>
-                  <td className="table-cell" style={{ color:"var(--text-faint)", fontFamily:"monospace" }}>{u.result}</td>
+                  <td className="table-cell" style={{ color:"var(--text-faint)" }}>{u.result}</td>
                   <td className="table-cell">
                     <span className="badge" style={{
                       background: u.type === "Win upset" ? "var(--negative-dim)" : "var(--accent-light)",

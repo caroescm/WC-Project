@@ -21,61 +21,61 @@ export default function Navbar() {
       left: '50%',
       transform: 'translateX(-50%)',
       zIndex: 100,
-      width: 'calc(100% - 48px)',
+      width: 'calc(100% - 96px)',
       maxWidth: 1200,
+      display: 'grid',
+      gridTemplateColumns: '1fr auto 1fr',
+      alignItems: 'center',
     }}>
+
+      {/* Left — Logo, floats on page background */}
+      <Link href="/" style={{
+        textDecoration: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 7,
+      }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" stroke="#1B4332" strokeWidth="1.8"/>
+          <path d="M12 2C12 2 8 7 8 12C8 17 12 22 12 22" stroke="#1B4332" strokeWidth="1.4" strokeLinecap="round"/>
+          <path d="M12 2C12 2 16 7 16 12C16 17 12 22 12 22" stroke="#1B4332" strokeWidth="1.4" strokeLinecap="round"/>
+          <path d="M2 12H22" stroke="#1B4332" strokeWidth="1.4" strokeLinecap="round"/>
+          <path d="M3.5 7H20.5" stroke="#1B4332" strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
+          <path d="M3.5 17H20.5" stroke="#1B4332" strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
+        </svg>
+        <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em' }}>
+          <span style={{ color: '#10241A' }}>Football</span>
+          <span style={{ color: '#1B4332' }}> Odds</span>
+        </span>
+      </Link>
+
+      {/* Center — Nav links in their own white pill */}
       <nav style={{
         display: 'flex',
         alignItems: 'center',
         background: '#ffffff',
-        borderRadius: 14,
-        padding: '0 12px',
-        height: 52,
-        boxShadow: '0 2px 12px rgba(14, 20, 32, 0.08)',
-        border: '1px solid rgba(0,0,0,0.06)',
+        borderRadius: 999,
+        border: '1px solid #DCE4DA',
+        boxShadow: '0 1px 6px rgba(16, 36, 26, 0.07)',
+        padding: '4px',
+        gap: 2,
       }}>
-        {/* Logo */}
-        <Link href="/" style={{
-          textDecoration: 'none',
-          padding: '0 16px 0 4px',
-          marginRight: 12,
-          borderRight: '1px solid #e9e6f4',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          flexShrink: 0,
-          gap: 7,
-        }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" stroke="#1a1628" strokeWidth="1.8"/>
-            <path d="M12 2C12 2 8 7 8 12C8 17 12 22 12 22" stroke="#1a1628" strokeWidth="1.4" strokeLinecap="round"/>
-            <path d="M12 2C12 2 16 7 16 12C16 17 12 22 12 22" stroke="#1a1628" strokeWidth="1.4" strokeLinecap="round"/>
-            <path d="M2 12H22" stroke="#1a1628" strokeWidth="1.4" strokeLinecap="round"/>
-            <path d="M3.5 7H20.5" stroke="#1a1628" strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
-            <path d="M3.5 17H20.5" stroke="#1a1628" strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
-          </svg>
-          <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em' }}>
-            <span style={{ color: '#1a1628' }}>Football</span>
-            <span style={{ color: '#5b21b6' }}> Odds</span>
-          </span>
-        </Link>
-
-        {/* Nav links */}
-        <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: 2 }}>
-          {NAV.map(({ href, label }) => {
-            const active = pathname === href;
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={active ? 'nav-link active' : 'nav-link'}
-              >
-                {label}
-              </Link>
-            );
-          })}
-        </div>
+        {NAV.map(({ href, label }) => {
+          const active = pathname === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={active ? 'nav-link active' : 'nav-link'}
+            >
+              {label}
+            </Link>
+          );
+        })}
       </nav>
+
+      {/* Right — empty spacer to keep pill centered */}
+      <div />
     </div>
   );
 }

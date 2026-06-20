@@ -1,0 +1,105 @@
+import TournamentOutlook from "../_components/TournamentOutlook";
+import { UpcomingClient } from "../upcoming/UpcomingClient";
+
+type SimEntry = { r32: number; r16: number; qf: number; sf: number; final: number; winner: number };
+type Simulation = Record<string, SimEntry>;
+
+interface Prediction { HOME_WIN: number; DRAW: number; AWAY_WIN: number; home_elo: number; away_elo: number; home_xg: number; away_xg: number }
+interface Fixture { match_number: number; date: string; location: string; home_team: string; away_team: string; group: string; result: string | null; prediction: Prediction }
+
+const BASE = process.env.API_URL ?? "https://wc-project-production.up.railway.app";
+
+const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
+
+export default async function PredictionsPage() {
+  let fixtures: Fixture[] = [];
+  let simulation: Simulation = {};
+
+  try {
+    [fixtures, simulation] = await Promise.all([
+      fetch(`${BASE}/fixtures`, { cache: "no-store" }).then(r => r.json()),
+      fetch(`${BASE}/simulate`, { next: { revalidate: 3600 } }).then(r => r.json()),
+    ]);
+  } catch {}
+
+  const ranked    = Object.entries(simulation).sort(([, a], [, b]) => b.winner - a.winner);
+  const maxWinner = ranked[0]?.[1].winner ?? 1;
+  const upcoming  = fixtures.filter(f => f.result === null);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+
+      {/* Page header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <h1 style={{ margin: 0, fontSize: "1.75rem", fontWeight: 700, letterSpacing: "-0.02em", color: "var(--foreground)" }}>
+          Predictions
+        </h1>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.8125rem", color: "var(--text-muted)", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, padding: "6px 12px" }}>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+            <rect x="1" y="2.5" width="14" height="12.5" rx="2" stroke="currentColor" strokeWidth="1.4"/>
+            <path d="M1 6.5H15" stroke="currentColor" strokeWidth="1.4"/>
+            <path d="M5 1V4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            <path d="M11 1V4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+          </svg>
+          <span>June 11 – July 19</span>
+        </div>
+      </div>
+
+      {/* Monte Carlo chart — show all teams */}
+      <TournamentOutlook simulation={simulation} maxTeams={ranked.length} />
+
+      {/* Full simulation table */}
+      {ranked.length > 0 && (
+        <div className="card table-wrap">
+          <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid var(--border)" }}>
+            <span style={{ fontSize: "1rem", fontWeight: 700, color: "#0e1420" }}>Full Simulation Table</span>
+            <span style={{ fontSize: "0.75rem", color: "var(--text-faint)", marginLeft: 10 }}>3,000 Monte Carlo rounds</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                {(["#", "Team", "Winner", "Final", "Semi", "QF", "R16", "R32"] as const).map((h, i) => (
+                  <th key={h} className="table-header" style={{ textAlign: i < 2 ? "left" : "right" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ranked.map(([team, p], i) => {
+                const top3 = i < 3;
+                return (
+                  <tr key={team} className="table-row">
+                    <td className="table-cell" style={{ color: "var(--text-faint)", width: 32 }}>{i + 1}</td>
+                    <td className="table-cell" style={{ fontWeight: top3 ? 700 : 500, color: top3 ? "var(--accent)" : "var(--foreground)" }}>{team}</td>
+                    <td className="table-cell" style={{ textAlign: "right" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
+                        <div className="bar-track" style={{ width: 64, flexShrink: 0 }}>
+                          <div className="bar-fill" style={{ background: top3 ? "var(--accent)" : "var(--border)", width: `${(p.winner / maxWinner) * 100}%` }} />
+                        </div>
+                        <span style={{ fontWeight: 600, color: top3 ? "var(--accent)" : "var(--text-faint)", width: 40, textAlign: "right" }}>{pct(p.winner)}</span>
+                      </div>
+                    </td>
+                    <td className="table-cell" style={{ textAlign: "right", color: "var(--text-faint)" }}>{pct(p.final)}</td>
+                    <td className="table-cell" style={{ textAlign: "right", color: "var(--text-faint)" }}>{pct(p.sf)}</td>
+                    <td className="table-cell" style={{ textAlign: "right", color: "var(--text-faint)" }}>{pct(p.qf)}</td>
+                    <td className="table-cell" style={{ textAlign: "right", color: "var(--text-faint)" }}>{pct(p.r16)}</td>
+                    <td className="table-cell" style={{ textAlign: "right", color: "var(--text-faint)" }}>{pct(p.r32)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Upcoming matches */}
+      <div>
+        <div style={{ marginBottom: 16 }}>
+          <span style={{ fontSize: "0.6875rem", fontWeight: 700, color: "var(--text-faint)", letterSpacing: "0.07em", textTransform: "uppercase" }}>
+            Upcoming Matches — {upcoming.length} remaining
+          </span>
+        </div>
+        <UpcomingClient fixtures={fixtures} />
+      </div>
+    </div>
+  );
+}

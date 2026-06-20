@@ -102,7 +102,7 @@ function GroupStandings({ standings }: { standings: Array<{ name: string; pts: n
             <div style={{ borderRadius: 9999, overflow: "hidden", flexShrink: 0, width: 72, height: 4, background: "var(--bg-page)" }}>
               <div style={{ height: "100%", borderRadius: 9999, width: `${barW}%`, background: qualifies ? "var(--accent)" : "var(--text-faint)" }} />
             </div>
-            <span style={{ fontSize: "0.75rem", fontWeight: 700, fontFamily: "monospace", width: 28, textAlign: "right", flexShrink: 0, color: qualifies ? "var(--accent)" : "var(--text-muted)" }}>
+            <span style={{ fontSize: "0.75rem", fontWeight: 700, fontFamily: "inherit", width: 28, textAlign: "right", flexShrink: 0, color: qualifies ? "var(--accent)" : "var(--text-muted)" }}>
               {ptsDisplay}
             </span>
           </div>

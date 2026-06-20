@@ -4,38 +4,42 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 
 type SimEntry = { r32: number; r16: number; qf: number; sf: number; final: number; winner: number };
+type Filter   = "all" | "winner" | "final" | "sf";
 
-interface Tooltip {
-  team: string;
-  winner: number;
-  final: number;
-  sf: number;
-  x: number;
-  y: number;
-}
+interface TooltipState { team: string; p: SimEntry; x: number; y: number }
 
-const BAR_COLORS = {
-  winner: "#3730a3",
-  final:  "#6366f1",
-  sf:     "#a5b4fc",
-};
+const COLORS = { winner: "#C9981A", final: "#1B4332", sf: "#A8C3B0" };
 
-const CHART_H = 210;
+const FILTERS: { key: Filter; label: string }[] = [
+  { key: "all",    label: "All"       },
+  { key: "winner", label: "Winner"    },
+  { key: "final",  label: "Final"     },
+  { key: "sf",     label: "Semifinal" },
+];
 
-export default function TournamentOutlook({ simulation }: { simulation: Record<string, SimEntry> }) {
-  const [tooltip,   setTooltip] = useState<Tooltip | null>(null);
-  const [mounted,     setMounted]     = useState(false);
-  const [hoveredTeam, setHoveredTeam] = useState<string | null>(null);
-  const [expandHover, setExpandHover] = useState(false);
+const CHART_H = 145;
+const N_TEAMS = 12;
+
+export default function TournamentOutlook({ simulation, maxTeams = 7 }: { simulation: Record<string, SimEntry>; maxTeams?: number }) {
+  const [filter,  setFilter]  = useState<Filter>("all");
+  const [mounted, setMounted] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
 
   useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 60);
+    const t = setTimeout(() => setMounted(true), 80);
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    setMounted(false);
+    const t = setTimeout(() => setMounted(true), 60);
+    return () => clearTimeout(t);
+  }, [filter]);
+
   const ranked = Object.entries(simulation)
     .sort(([, a], [, b]) => b.winner - a.winner)
-    .slice(0, 10);
+    .slice(0, maxTeams);
 
   if (ranked.length === 0) {
     return (
@@ -45,125 +49,128 @@ export default function TournamentOutlook({ simulation }: { simulation: Record<s
     );
   }
 
-  // Dynamic ceiling: round the highest SF value up to the nearest 10%
-  const maxSF  = Math.max(...ranked.map(([, p]) => p.sf));
-  const yMax   = Math.ceil(maxSF / 0.10) * 0.10;
-  const ySteps = Array.from({ length: Math.round(yMax / 0.10) + 1 }, (_, i) => i * 0.10);
+  const getVal = (p: SimEntry) =>
+    filter === "winner" ? p.winner : filter === "final" ? p.final : p.sf;
+
+  const maxVal = Math.max(...ranked.map(([, p]) => getVal(p)));
+  const yMax   = Math.ceil(maxVal / 0.05) * 0.05 || 0.05;
+  const ySteps = [0, 0.25, 0.5, 0.75, 1].map(f => f * yMax);
 
   return (
-    <div className="card" style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 10 }}>
+    <div className="card" style={{ padding: "14px 18px", display: "flex", flexDirection: "column", gap: 8, height: "100%" }}>
 
       {/* ── Header ── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div>
-          <div style={{ fontSize: "1rem", fontWeight: 700, color: "#0e1420" }}>Tournament Outlook</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 3 }}>
-            <span style={{ fontSize: "0.75rem", color: "#6b7280" }}>Monte Carlo simulation · 3,000 rounds</span>
-            {([
-              { label: "Winner",     color: BAR_COLORS.winner },
-              { label: "Final",      color: BAR_COLORS.final  },
-              { label: "Semi-final", color: BAR_COLORS.sf     },
-            ] as const).map(({ label, color }) => (
-              <div key={label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <div style={{ width: 8, height: 8, borderRadius: 2, background: color, flexShrink: 0 }} />
-                <span style={{ fontSize: "0.6875rem", color: "#374151" }}>{label}</span>
-              </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: "1rem", fontWeight: 700, color: "#0e1420" }}>Monte Carlo Simulation</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", background: "#E4EDE7", borderRadius: 999, padding: 3, gap: 2 }}>
+            {FILTERS.map(({ key, label }) => (
+              <button key={key} onClick={() => setFilter(key)} style={{
+                padding: "4px 10px",
+                fontSize: "0.625rem",
+                fontWeight: 600,
+                border: "none",
+                borderRadius: 999,
+                cursor: "pointer",
+                background: filter === key ? "#1B4332" : "transparent",
+                color:      filter === key ? "#ffffff"  : "#6B7C70",
+                boxShadow:  filter === key ? "0 1px 3px rgba(0,0,0,0.18)" : "none",
+                transition: "all 0.15s",
+                whiteSpace: "nowrap",
+              }}>
+                {label}
+              </button>
             ))}
           </div>
+          <Link href="/predictions" className="back-link">
+            See All ↗
+          </Link>
         </div>
-        <Link
-          href="/montecarlo"
-          onMouseEnter={() => setExpandHover(true)}
-          onMouseLeave={() => setExpandHover(false)}
-          style={{
-            fontSize: "0.75rem",
-            fontWeight: 600,
-            color:      expandHover ? "#ffffff" : "#3730a3",
-            background: expandHover ? "#3730a3" : "transparent",
-            border:    `1.5px solid ${expandHover ? "#3730a3" : "#3730a3"}`,
-            borderRadius: 20,
-            padding: "5px 16px",
-            textDecoration: "none",
-            whiteSpace: "nowrap",
-            transition: "background 0.18s ease, color 0.18s ease",
-          }}
-        >
-          Expand
-        </Link>
+      </div>
+
+      {/* ── Legend (always occupies space, hidden when not in All mode) ── */}
+      <div style={{ display: "flex", gap: 16, alignItems: "center", visibility: filter === "all" ? "visible" : "hidden" }}>
+        {(["winner", "final", "sf"] as const).map(k => (
+          <div key={k} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <div style={{ width: 8, height: 8, borderRadius: 2, background: COLORS[k], flexShrink: 0 }} />
+            <span style={{ fontSize: "0.625rem", color: "#6b7280" }}>
+              {k === "winner" ? "Winner" : k === "final" ? "Final" : "Semifinal"}
+            </span>
+          </div>
+        ))}
       </div>
 
       {/* ── Chart ── */}
       <div style={{ position: "relative" }}>
+        <div style={{ position: "relative", height: CHART_H, paddingLeft: 36, marginTop: 20 }}>
 
-        {/* Y-axis + gridlines */}
-        <div style={{ position: "relative", height: CHART_H, paddingLeft: 36, marginTop: 8 }}>
-          {ySteps.map(pct => {
+          {/* Gridlines */}
+          {ySteps.map((pct, i) => {
             const top = ((yMax - pct) / yMax) * CHART_H;
             return (
-              <div key={pct} style={{ position: "absolute", top, left: 0, right: 0, display: "flex", alignItems: "center", transform: "translateY(-50%)" }}>
-                <span style={{ width: 30, fontSize: "0.625rem", color: "#6b7280", textAlign: "right", flexShrink: 0, userSelect: "none" }}>
+              <div key={i} style={{ position: "absolute", top, left: 0, right: 0, display: "flex", alignItems: "center", transform: "translateY(-50%)" }}>
+                <span style={{ width: 30, fontSize: "0.5625rem", color: "#9ca3af", textAlign: "right", flexShrink: 0 }}>
                   {(pct * 100).toFixed(0)}%
                 </span>
-                <div style={{ flex: 1, height: 1, background: pct === 0 ? "var(--border)" : "var(--border)", opacity: pct === 0 ? 1 : 0.5, marginLeft: 6 }} />
+                <div style={{ flex: 1, height: 1, background: "#e9e6f4", marginLeft: 6, opacity: i === 0 ? 1 : 0.6 }} />
               </div>
             );
           })}
 
           {/* Bars */}
-          <div style={{ position: "absolute", inset: 0, left: 36, display: "flex", alignItems: "flex-end", gap: 6 }}>
-            {ranked.map(([team, p], teamIdx) => (
-              <div
-                key={team}
-                style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}
-                onMouseEnter={e => { setTooltip({ team, winner: p.winner, final: p.final, sf: p.sf, x: e.clientX, y: e.clientY }); setHoveredTeam(team); }}
-                onMouseMove={e  => setTooltip(t => t ? { ...t, x: e.clientX, y: e.clientY } : null)}
-                onMouseLeave={() => { setTooltip(null); setHoveredTeam(null); }}
-              >
-                <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: CHART_H, cursor: "crosshair" }}>
-                  {([
-                    { key: "winner", val: p.winner, color: BAR_COLORS.winner },
-                    { key: "final",  val: p.final,  color: BAR_COLORS.final  },
-                    { key: "sf",     val: p.sf,     color: BAR_COLORS.sf     },
-                  ] as const).map(({ key, val, color }, barIdx) => (
-                    <div
-                      key={key}
-                      style={{
-                        width: 24,
-                        height: Math.max(3, (val / yMax) * CHART_H),
-                        background: color,
-                        borderRadius: "3px 3px 0 0",
-                        transformOrigin: "bottom",
-                        transform: [
-                          mounted ? "scaleY(1)" : "scaleY(0)",
-                          hoveredTeam === team ? "scaleY(1.04)" : "",
-                        ].filter(Boolean).join(" "),
-                        transition: [
-                          `transform 0.55s cubic-bezier(0.34,1.56,0.64,1) ${teamIdx * 55 + barIdx * 20}ms`,
-                          "opacity 0.15s ease",
-                          "filter 0.15s ease",
-                        ].join(", "),
-                        opacity: hoveredTeam && hoveredTeam !== team ? 0.35 : 1,
-                        filter: hoveredTeam === team ? "brightness(1.12)" : "none",
-                      }}
-                    />
-                  ))}
+          <div style={{ position: "absolute", inset: 0, left: 36, display: "flex", alignItems: "flex-end", gap: 4 }}>
+            {ranked.map(([team, p]) => {
+              const fade = hovered !== null && hovered !== team;
+
+              if (filter === "all") {
+                const wH  = mounted ? Math.max(2,  (p.winner              / yMax) * CHART_H) : 0;
+                const fH  = mounted ? Math.max(0, ((p.final  - p.winner)  / yMax) * CHART_H) : 0;
+                const sfH = mounted ? Math.max(0, ((p.sf     - p.final)   / yMax) * CHART_H) : 0;
+                return (
+                  <div
+                    key={team}
+                    style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", cursor: "default" }}
+                    onMouseEnter={e => { setHovered(team); setTooltip({ team, p, x: e.clientX, y: e.clientY }); }}
+                    onMouseMove={e  => setTooltip(t => t ? { ...t, x: e.clientX, y: e.clientY } : null)}
+                    onMouseLeave={() => { setHovered(null); setTooltip(null); }}
+                  >
+                    <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", height: CHART_H, width: "100%", maxWidth: 32 }}>
+                      <div style={{ height: wH,  background: COLORS.winner, borderRadius: "6px 6px 0 0", opacity: fade ? 0.3 : 1, transition: "height 0.5s cubic-bezier(0.34,1.2,0.64,1), opacity 0.15s" }} />
+                      <div style={{ height: fH,  background: COLORS.final,                               opacity: fade ? 0.3 : 1, transition: "height 0.5s cubic-bezier(0.34,1.2,0.64,1) 30ms, opacity 0.15s" }} />
+                      <div style={{ height: sfH, background: COLORS.sf,                                  opacity: fade ? 0.3 : 1, transition: "height 0.5s cubic-bezier(0.34,1.2,0.64,1) 60ms, opacity 0.15s" }} />
+                    </div>
+                  </div>
+                );
+              }
+
+              const val  = getVal(p);
+              const barH = mounted ? Math.max(3, (val / yMax) * CHART_H) : 0;
+              const color = filter === "winner" ? COLORS.winner : filter === "final" ? COLORS.final : COLORS.sf;
+              return (
+                <div
+                  key={team}
+                  style={{ flex: 1, display: "flex", alignItems: "flex-end", cursor: "default" }}
+                  onMouseEnter={e => { setHovered(team); setTooltip({ team, p, x: e.clientX, y: e.clientY }); }}
+                  onMouseMove={e  => setTooltip(t => t ? { ...t, x: e.clientX, y: e.clientY } : null)}
+                  onMouseLeave={() => { setHovered(null); setTooltip(null); }}
+                >
+                  <div style={{
+                    height: barH, width: "100%", maxWidth: 32,
+                    background: color,
+                    borderRadius: "6px 6px 0 0",
+                    opacity: fade ? 0.3 : 1,
+                    transition: "height 0.45s cubic-bezier(0.34,1.2,0.64,1), opacity 0.15s",
+                  }} />
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* X-axis labels */}
-        <div style={{ display: "flex", gap: 6, paddingLeft: 36, marginTop: 12 }}>
+        <div style={{ display: "flex", gap: 4, paddingLeft: 36, marginTop: 4 }}>
           {ranked.map(([team]) => (
-            <div
-              key={team}
-              style={{
-                flex: 1, textAlign: "center",
-                fontSize: "0.6875rem", color: "#374151",
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-              }}
-            >
+            <div key={team} style={{ flex: 1, textAlign: "center", fontSize: "0.5625rem", color: "#374151", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {team}
             </div>
           ))}
@@ -174,23 +181,23 @@ export default function TournamentOutlook({ simulation }: { simulation: Record<s
       {tooltip && (
         <div style={{
           position: "fixed",
-          top: tooltip.y - 90,
-          left: tooltip.x - 64,
-          background: "#0e1420",
+          top: tooltip.y - 100,
+          left: tooltip.x - 72,
+          background: "#10241A",
           color: "#fff",
-          borderRadius: 8,
+          borderRadius: 12,
           padding: "8px 12px",
-          fontSize: "0.75rem",
+          fontSize: "0.6875rem",
           pointerEvents: "none",
-          zIndex: 200,
-          minWidth: 128,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+          zIndex: 999,
+          minWidth: 140,
+          boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
         }}>
           <div style={{ fontWeight: 700, marginBottom: 5 }}>{tooltip.team}</div>
           {([
-            { label: "Winner",     val: tooltip.winner, color: BAR_COLORS.winner },
-            { label: "Final",      val: tooltip.final,  color: BAR_COLORS.final  },
-            { label: "Semi-final", val: tooltip.sf,     color: BAR_COLORS.sf     },
+            { label: "Winner",    val: tooltip.p.winner, color: COLORS.winner },
+            { label: "Final",     val: tooltip.p.final,  color: COLORS.final  },
+            { label: "Semifinal", val: tooltip.p.sf,     color: COLORS.sf     },
           ] as const).map(({ label, val, color }) => (
             <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 2 }}>
               <span style={{ color: "#9ca3af", display: "flex", alignItems: "center", gap: 4 }}>
@@ -200,12 +207,6 @@ export default function TournamentOutlook({ simulation }: { simulation: Record<s
               <span style={{ fontWeight: 600 }}>{(val * 100).toFixed(1)}%</span>
             </div>
           ))}
-          {/* caret */}
-          <div style={{
-            position: "absolute", bottom: -5, left: "50%", transform: "translateX(-50%)",
-            width: 10, height: 10, background: "#0e1420",
-            clipPath: "polygon(0 0, 100% 0, 50% 100%)",
-          }} />
         </div>
       )}
     </div>
