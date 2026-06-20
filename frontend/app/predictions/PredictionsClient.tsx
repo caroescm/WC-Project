@@ -138,10 +138,10 @@ function SimulationTab({ simulation }: { simulation: Simulation }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 
       {/* Controls row */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
 
         {/* Search */}
-        <div style={{ position: "relative", flex: "1 1 180px", minWidth: 160, maxWidth: 280 }}>
+        <div style={{ position: "relative", minWidth: 160, maxWidth: 280 }}>
           <svg style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--text-faint)", pointerEvents: "none" }} width="13" height="13" viewBox="0 0 20 20" fill="none">
             <circle cx="8.5" cy="8.5" r="5.75" stroke="currentColor" strokeWidth="1.6"/>
             <path d="M13 13l3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
@@ -293,7 +293,7 @@ function MatchRow({ fixture }: { fixture: Fixture }) {
   return (
     <div style={{
       display: "grid",
-      gridTemplateColumns: "90px 1fr 160px 1fr 140px",
+      gridTemplateColumns: "90px 1fr 260px 1fr 140px",
       alignItems: "center",
       gap: 12,
       padding: "12px 14px",
@@ -359,16 +359,18 @@ function MatchPredictionsTab({ fixtures }: { fixtures: Fixture[] }) {
   const upcoming = useMemo(() => fixtures.filter(f => f.result === null), [fixtures]);
 
   const groups = useMemo(() => {
-    const gs = [...new Set(upcoming.map(f => f.group))].sort((a, b) => {
-      const letter = (g: string) => g.replace("Group ", "");
-      return letter(a).localeCompare(letter(b));
-    });
-    return ["All", ...gs];
+    const gs = [...new Set(upcoming.map(f => f.group))]
+      .filter(g => g.startsWith("Group "))
+      .sort((a, b) => a.replace("Group ", "").localeCompare(b.replace("Group ", "")));
+    return ["All", "Knockout", ...gs];
   }, [upcoming]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    let list = activeGroup === "All" ? upcoming : upcoming.filter(f => f.group === activeGroup);
+    let list =
+      activeGroup === "All"      ? upcoming :
+      activeGroup === "Knockout" ? upcoming.filter(f => !f.group.startsWith("Group ")) :
+                                   upcoming.filter(f => f.group === activeGroup);
     if (q) list = list.filter(f => f.home_team.toLowerCase().includes(q) || f.away_team.toLowerCase().includes(q));
     return list;
   }, [upcoming, activeGroup, search]);
@@ -380,10 +382,10 @@ function MatchPredictionsTab({ fixtures }: { fixtures: Fixture[] }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 
       {/* Controls row */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
 
         {/* Search */}
-        <div style={{ position: "relative", flex: "1 1 180px", minWidth: 160, maxWidth: 280 }}>
+        <div style={{ position: "relative", minWidth: 160, maxWidth: 280 }}>
           <svg style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--text-faint)", pointerEvents: "none" }} width="13" height="13" viewBox="0 0 20 20" fill="none">
             <circle cx="8.5" cy="8.5" r="5.75" stroke="currentColor" strokeWidth="1.6"/>
             <path d="M13 13l3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
@@ -405,7 +407,7 @@ function MatchPredictionsTab({ fixtures }: { fixtures: Fixture[] }) {
         {/* Group filter tabs */}
         <div style={{ display: "flex", background: "var(--toggle-track)", padding: 3, gap: 2, flexWrap: "wrap" }}>
           {groups.map(g => {
-            const label = g === "All" ? "All" : g.replace("Group ", "");
+            const label = g === "All" || g === "Knockout" ? g : g.replace("Group ", "");
             return (
               <button
                 key={g}
@@ -430,7 +432,7 @@ function MatchPredictionsTab({ fixtures }: { fixtures: Fixture[] }) {
         {/* Column header */}
         <div style={{
           display: "grid",
-          gridTemplateColumns: "90px 1fr 160px 1fr 140px",
+          gridTemplateColumns: "90px 1fr 260px 1fr 140px",
           gap: 12, padding: "8px 14px",
           borderBottom: "1px solid var(--border)",
           background: "var(--bg-page)",

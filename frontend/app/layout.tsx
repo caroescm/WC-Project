@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <SplashScreen />
         <Sidebar />
-        <main style={{ flex: 1, padding: "56px 28px 8px", maxWidth: 1296, margin: "0 auto", width: "100%" }}>
+        <main style={{ flex: 1, padding: "80px 28px 8px", maxWidth: 1296, margin: "0 auto", width: "100%" }}>
           {children}
         </main>
       </body>
