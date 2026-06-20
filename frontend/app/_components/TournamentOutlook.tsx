@@ -18,7 +18,6 @@ const FILTERS: { key: Filter; label: string }[] = [
 ];
 
 const CHART_H = 150;
-const N_TEAMS = 12;
 
 export default function TournamentOutlook({ simulation, maxTeams = 7 }: { simulation: Record<string, SimEntry>; maxTeams?: number }) {
   const [filter,  setFilter]  = useState<Filter>("all");
