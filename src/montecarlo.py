@@ -1,18 +1,12 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
-
-try:
-    from config import name_map
-    from predict import predicting
-except ImportError:
-    from .config import name_map
-    from .predict import predicting
+from .config import name_map
+from .predict import predicting
 
 BASE_DIR = Path(__file__).parent.parent
 
 _fixtures = pd.read_csv(BASE_DIR / 'data/raw/wc2026_fixtures.csv')
-_elo      = pd.read_csv(BASE_DIR / 'data/processed/elo_current.csv')
 
 _group_fixtures = _fixtures[
     _fixtures['Group'].notna() & (_fixtures['Group'] != '')
@@ -226,3 +220,9 @@ def get_cached_simulation():
     if _cache is None:
         _cache = simulate_tournament(n=3000)
     return _cache
+
+
+def invalidate_cache():
+    global _cache
+    _cache = None
+    _pred_cache.clear()

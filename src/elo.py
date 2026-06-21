@@ -78,7 +78,7 @@ def sync_elos_from_fixtures():
         exp_away = expected_score(away_elo, home_elo)
 
         goal_diff = abs(home_score - away_score)
-        mov = np.log(goal_diff + 1) if goal_diff > 0 else np.log(1)
+        mov = np.log(goal_diff + 1)
 
         if home_score > away_score:
             actual_home, actual_away = 1.0, 0.0
@@ -116,7 +116,6 @@ def register_result(match_number: int, home_score: int, away_score: int):
         raise ValueError(f"Match {match_number} not found")
 
     row = fixtures[mask].iloc[0]
-    from .config import name_map
     home_team = name_map.get(row["Home Team"], row["Home Team"])
     away_team = name_map.get(row["Away Team"], row["Away Team"])
 

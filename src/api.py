@@ -126,6 +126,7 @@ class ResultInput(BaseModel):
 
 @app.post("/result")
 def post_result(body: ResultInput):
+    from .montecarlo import invalidate_cache
     try:
         # Capture prediction BEFORE ELO is updated — this is the true pre-match prediction
         fixtures = pd.read_csv(BASE_DIR / "data/raw/wc2026_fixtures.csv")
@@ -134,13 +135,17 @@ def post_result(body: ResultInput):
             row  = fixtures[mask].iloc[0]
             home = name_map.get(row["Home Team"], row["Home Team"])
             away = name_map.get(row["Away Team"], row["Away Team"])
+            group = row.get("Group", "")
+            is_knockout = pd.isna(group) or str(group).strip() == ""
             try:
-                prediction = predicting(home, away, neutral=True)
+                prediction = predicting(home, away, neutral=True, knockout=is_knockout)
                 _log_prediction(body.match_number, prediction)
             except Exception:
                 pass
 
-        return register_result(body.match_number, body.home_score, body.away_score)
+        result = register_result(body.match_number, body.home_score, body.away_score)
+        invalidate_cache()
+        return result
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
