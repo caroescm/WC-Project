@@ -7,6 +7,12 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "FootballOdds",
   description: "FootballOdds — match predictions powered by Elo ratings",
+  icons: { icon: "/favicon.ico" },
+  openGraph: {
+    title: "FootballOdds",
+    description: "Match predictions powered by Elo ratings",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
