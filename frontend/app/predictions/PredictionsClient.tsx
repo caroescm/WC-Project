@@ -302,7 +302,7 @@ function MatchRow({ fixture }: { fixture: Fixture }) {
       {/* Group + upset */}
       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
         <span className="badge badge-accent" style={{ width: "fit-content" }}>{fixture.group}</span>
-        {upset && <span className="badge" style={{ background: "var(--risk-dim)", color: "var(--risk)", width: "fit-content" }}>Upset ⚡</span>}
+        {upset && <span className="badge" style={{ background: "var(--risk-dim)", color: "var(--risk)", width: "fit-content" }}>Upset</span>}
       </div>
 
       {/* Home team */}
@@ -461,10 +461,285 @@ function MatchPredictionsTab({ fixtures }: { fixtures: Fixture[] }) {
   );
 }
 
+// ── Tab 3: Tournament Bracket ────────────────────────────────────────────────
+
+const R32_MATCHES = [
+  { matchNum: 73, date: "Jun 28", home: "2nd A",   away: "2nd B"         },
+  { matchNum: 74, date: "Jun 29", home: "1st E",   away: "3rd A/B/C/D/F" },
+  { matchNum: 75, date: "Jun 30", home: "1st F",   away: "2nd C"         },
+  { matchNum: 76, date: "Jun 29", home: "1st C",   away: "2nd F"         },
+  { matchNum: 77, date: "Jun 30", home: "1st I",   away: "3rd C/D/F/G/H" },
+  { matchNum: 78, date: "Jun 30", home: "2nd E",   away: "2nd I"         },
+  { matchNum: 79, date: "Jul 1",  home: "1st A",   away: "3rd C/E/F/H/I" },
+  { matchNum: 80, date: "Jul 1",  home: "1st L",   away: "3rd E/H/I/J/K" },
+  { matchNum: 81, date: "Jul 2",  home: "1st D",   away: "3rd B/E/F/I/J" },
+  { matchNum: 82, date: "Jul 1",  home: "1st G",   away: "3rd A/E/H/I/J" },
+  { matchNum: 83, date: "Jul 2",  home: "2nd K",   away: "2nd L"         },
+  { matchNum: 84, date: "Jul 2",  home: "1st H",   away: "2nd J"         },
+  { matchNum: 85, date: "Jul 3",  home: "1st B",   away: "3rd E/F/G/I/J" },
+  { matchNum: 86, date: "Jul 3",  home: "1st J",   away: "2nd H"         },
+  { matchNum: 87, date: "Jul 4",  home: "1st K",   away: "3rd D/E/I/J/L" },
+  { matchNum: 88, date: "Jul 3",  home: "2nd D",   away: "2nd G"         },
+];
+
+type BracketRound = "r32" | "r16" | "qf" | "sf" | "final";
+
+const BRACKET_ROUNDS: { key: BracketRound; label: string; short: string; dates: string; slots: number; simKey: keyof SimEntry; cols: number }[] = [
+  { key: "r32",   label: "Round of 32",    short: "R32",  dates: "Jun 28 – Jul 4", slots: 16, simKey: "r32",   cols: 4 },
+  { key: "r16",   label: "Round of 16",    short: "R16",  dates: "Jul 4 – 6",      slots: 8,  simKey: "r16",   cols: 4 },
+  { key: "qf",    label: "Quarter-Finals", short: "QF",   dates: "Jul 9 – 11",     slots: 4,  simKey: "qf",    cols: 4 },
+  { key: "sf",    label: "Semi-Finals",    short: "SF",   dates: "Jul 14 – 15",    slots: 2,  simKey: "sf",    cols: 2 },
+  { key: "final", label: "Final",          short: "Final",dates: "Jul 19",          slots: 1,  simKey: "final", cols: 1 },
+];
+
+const MEDAL_COLORS: Record<number, { color: string; bg: string; border: string }> = {
+  0: { color: "#92701A", bg: "rgba(201,152,26,0.08)", border: "rgba(201,152,26,0.35)" },
+  1: { color: "#5A6B70", bg: "rgba(140,160,165,0.08)", border: "rgba(140,160,165,0.35)" },
+  2: { color: "#7A4E2D", bg: "rgba(180,100,60,0.08)", border: "rgba(180,100,60,0.35)" },
+};
+
+function BracketTab({ simulation }: { simulation: Simulation }) {
+  const [activeRound, setActiveRound] = useState<BracketRound>("r32");
+
+  const topFor = (key: keyof SimEntry, n: number) =>
+    [...Object.entries(simulation)]
+      .sort(([, a], [, b]) => b[key] - a[key])
+      .slice(0, n);
+
+  const winner = useMemo(
+    () => [...Object.entries(simulation)].sort(([, a], [, b]) => b.winner - a.winner)[0],
+    [simulation]
+  );
+
+  if (!Object.keys(simulation).length) {
+    return <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>Simulation data unavailable.</p>;
+  }
+
+  const round = BRACKET_ROUNDS.find(r => r.key === activeRound)!;
+  const roundIndex = BRACKET_ROUNDS.findIndex(r => r.key === activeRound);
+
+  // ── Match card (R32 — known slot codes) ──
+  const KnownMatchCard = ({ matchNum, date, home, away }: { matchNum: number; date: string; home: string; away: string }) => (
+    <div style={{
+      background: "var(--card-bg)",
+      border: "1px solid var(--border)",
+      padding: "12px 14px",
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+      minWidth: 0,
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{
+          fontSize: "0.5625rem", fontWeight: 700, letterSpacing: "0.06em",
+          background: "var(--accent-light)", color: "var(--accent)",
+          padding: "2px 6px",
+        }}>M{matchNum}</span>
+        <span style={{ fontSize: "0.5625rem", color: "var(--text-faint)", fontWeight: 500 }}>{date}</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 8 }}>
+        <span style={{
+          fontSize: "0.8125rem", fontWeight: 700, color: "var(--foreground)",
+          textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        }}>{home}</span>
+        <span style={{
+          fontSize: "0.5625rem", fontWeight: 800, color: "var(--text-faint)",
+          border: "1px solid var(--border)", padding: "2px 5px", flexShrink: 0,
+          letterSpacing: "0.04em",
+        }}>VS</span>
+        <span style={{
+          fontSize: "0.8125rem", fontWeight: 700, color: "var(--foreground)",
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        }}>{away}</span>
+      </div>
+    </div>
+  );
+
+  // ── TBD card (R16 onward) ──
+  const TBDCard = ({ i }: { i: number }) => (
+    <div style={{
+      background: "var(--card-bg-alt)",
+      border: "1px dashed var(--border)",
+      padding: "12px 14px",
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+      opacity: 0.7,
+      minWidth: 0,
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{
+          fontSize: "0.5625rem", fontWeight: 700, letterSpacing: "0.06em",
+          background: "var(--toggle-track)", color: "var(--text-faint)",
+          padding: "2px 6px",
+        }}>#{i + 1}</span>
+        <span style={{ fontSize: "0.5625rem", color: "var(--text-faint)" }}>{round.dates}</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-muted)", textAlign: "right" }}>TBD</span>
+        <span style={{
+          fontSize: "0.5625rem", fontWeight: 800, color: "var(--text-faint)",
+          border: "1px dashed var(--border)", padding: "2px 5px", flexShrink: 0,
+        }}>VS</span>
+        <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-muted)" }}>TBD</span>
+      </div>
+    </div>
+  );
+
+  // ── Favorites grid ──
+  const FavoritesGrid = ({ simKey, n }: { simKey: keyof SimEntry; n: number }) => {
+    const top = topFor(simKey, n);
+    const maxVal = top[0]?.[1][simKey] ?? 1;
+    return (
+      <div>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8,
+          padding: "10px 14px", background: "var(--toggle-track)",
+          borderBottom: "1px solid var(--border)",
+        }}>
+          <span style={{ fontSize: "0.625rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Simulation Favorites
+          </span>
+          <span style={{ fontSize: "0.5625rem", color: "var(--text-faint)" }}>
+            · who reaches this round in 3,000 Monte Carlo runs
+          </span>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
+          {top.map(([team, p], i) => {
+            const medal = MEDAL_COLORS[i];
+            return (
+              <div key={team} style={{
+                padding: "12px 14px",
+                borderRight: (i + 1) % 4 !== 0 ? "1px solid var(--border)" : undefined,
+                borderBottom: i < top.length - 4 ? "1px solid var(--border)" : undefined,
+                background: medal ? medal.bg : "var(--card-bg)",
+                display: "flex", gap: 10, alignItems: "flex-start",
+              }}>
+                <span style={{
+                  fontSize: "0.75rem", fontWeight: 800,
+                  color: medal ? medal.color : "var(--text-faint)",
+                  width: 18, flexShrink: 0, paddingTop: 1,
+                }}>{i + 1}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: "0.875rem",
+                    fontWeight: i < 3 ? 700 : 500,
+                    color: medal ? medal.color : "var(--foreground)",
+                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                    marginBottom: 6,
+                  }}>{team}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div className="bar-track" style={{ flex: 1, height: 3 }}>
+                      <div className="bar-fill" style={{
+                        width: `${(p[simKey] / maxVal) * 100}%`,
+                        background: medal ? medal.color : "var(--border)",
+                        height: "100%",
+                      }} />
+                    </div>
+                    <span style={{
+                      fontSize: "0.6875rem", fontWeight: 600,
+                      color: medal ? medal.color : "var(--text-faint)",
+                      flexShrink: 0, width: 36, textAlign: "right",
+                    }}>
+                      {(p[simKey] * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const favN = activeRound === "sf" ? 4 : activeRound === "final" ? 4 : 8;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+      {/* ── Round header + filter ── */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+          <h2 style={{ margin: 0, fontSize: "1rem", fontWeight: 700, color: "var(--foreground)" }}>
+            {round.label}
+          </h2>
+          <span style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>{round.dates}</span>
+          {activeRound === "r32" && (
+            <span style={{ fontSize: "0.6875rem", color: "var(--text-faint)" }}>
+              · Slots assigned by group stage finish
+            </span>
+          )}
+        </div>
+        <div style={{ display: "flex", background: "var(--toggle-track)", padding: 3, gap: 2, flexShrink: 0 }}>
+          {BRACKET_ROUNDS.map(r => {
+            const active = r.key === activeRound;
+            return (
+              <button
+                key={r.key}
+                onClick={() => setActiveRound(r.key)}
+                style={{
+                  padding: "4px 10px", fontSize: "0.625rem", fontWeight: 600,
+                  border: "none", borderRadius: 0, cursor: "pointer",
+                  background: active ? "#2E8B57" : "transparent",
+                  color: active ? "#ffffff" : "var(--toggle-inactive)",
+                  transition: "all 0.15s", whiteSpace: "nowrap",
+                }}
+              >
+                {r.short}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Match grid ── */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: `repeat(${round.cols}, 1fr)`,
+        gap: 6,
+        ...(activeRound === "final" ? { maxWidth: 320 } : {}),
+      }}>
+        {activeRound === "r32"
+          ? R32_MATCHES.map(m => <KnownMatchCard key={m.matchNum} {...m} />)
+          : Array.from({ length: round.slots }, (_, i) => <TBDCard key={i} i={i} />)
+        }
+      </div>
+
+      {/* ── Simulation favorites ── */}
+      <div style={{ border: "1px solid var(--border)", overflow: "hidden" }}>
+        <FavoritesGrid simKey={round.simKey} n={favN} />
+      </div>
+
+      {/* ── Predicted champion (Final tab only) ── */}
+      {activeRound === "final" && winner && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 14,
+          padding: "14px 18px",
+          background: "var(--accent-dim)",
+          border: "1px solid var(--border)",
+        }}>
+          <span style={{ fontSize: "0.625rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", flexShrink: 0 }}>
+            Predicted Champion
+          </span>
+          <span style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--accent)" }}>{winner[0]}</span>
+          <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>
+            {(winner[1].winner * 100).toFixed(1)}% chance to win the tournament
+          </span>
+        </div>
+      )}
+
+      <span style={{ fontSize: "0.6875rem", color: "var(--text-faint)" }}>
+        Bracket structure based on official 2026 FIFA WC draw · 3,000 Monte Carlo simulations
+      </span>
+    </div>
+  );
+}
+
 // ── Root ─────────────────────────────────────────────────────────────────────
 
 export function PredictionsClient({ simulation, fixtures }: { simulation: Simulation; fixtures: Fixture[] }) {
-  const [tab, setTab] = useState<"simulation" | "matches">("simulation");
+  const [tab, setTab] = useState<"simulation" | "matches" | "bracket">("simulation");
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
     padding: "8px 16px",
@@ -489,11 +764,14 @@ export function PredictionsClient({ simulation, fixtures }: { simulation: Simula
         <button style={tabStyle(tab === "matches")} onClick={() => setTab("matches")}>
           Match Predictions
         </button>
+        <button style={tabStyle(tab === "bracket")} onClick={() => setTab("bracket")}>
+          Bracket
+        </button>
       </div>
 
-      {tab === "simulation"
-        ? <SimulationTab simulation={simulation} />
-        : <MatchPredictionsTab fixtures={fixtures} />
+      {tab === "simulation" ? <SimulationTab simulation={simulation} />
+        : tab === "matches" ? <MatchPredictionsTab fixtures={fixtures} />
+        : <BracketTab simulation={simulation} />
       }
     </div>
   );
