@@ -165,12 +165,6 @@ def _resolve_slot(slot: str, rankings: dict, third_assignments: dict) -> str:
     raise ValueError(f'Cannot resolve slot: {slot}')
 
 
-def simulate_groups(n: int = 1000) -> list[dict]:
-    for _, row in _group_fixtures.iterrows():
-        _get_prediction(row['Home Team'], row['Away Team'])
-    return [_simulate_once(_group_fixtures)[0] for _ in range(n)]
-
-
 def simulate_tournament(n: int = 10000) -> dict:
     """
     Returns { team: { r32, r16, qf, sf, final, winner } } as fractions (0–1).
@@ -199,17 +193,6 @@ def simulate_tournament(n: int = 10000) -> dict:
                 if team not in counts:
                     counts[team] = {s: 0 for s in ('r32','r16','qf','sf','final','winner')}
                 counts[team]['r32'] += 1
-
-        # Simulate R16, QF, SF, Final
-        stage_names = {
-            id(bracket): name
-            for bracket, name in [
-                (_R16_BRACKET, 'r16'),
-                (_QF_BRACKET,  'qf'),
-                (_SF_BRACKET,  'sf'),
-                (_FINAL_BRACKET, 'final'),
-            ]
-        }
 
         for bracket, stage in [(_R16_BRACKET,'r16'),(_QF_BRACKET,'qf'),
                                 (_SF_BRACKET,'sf'),(_FINAL_BRACKET,'final')]:

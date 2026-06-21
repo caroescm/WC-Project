@@ -4,7 +4,6 @@ from pathlib import Path
 from .config import K_FACTORS, name_map
 
 BASE_DIR = Path(__file__).parent.parent
-HOME_ADVANTAGE = 100
 EWM_SPAN       = 10
 EWM_ALPHA      = 2 / (EWM_SPAN + 1)
 EWM_SPAN_SHORT = 5
