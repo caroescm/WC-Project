@@ -80,7 +80,7 @@ Built with **FastAPI**. Exposes predictions and simulation results to the fronte
 | ML models | scikit-learn, XGBoost, scipy |
 | Data pipeline | pandas |
 | Frontend deploy | Vercel |
-| Backend deploy | Render / Fly.io |
+| Backend deploy | Railway |
 
 ---
 
