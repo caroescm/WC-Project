@@ -61,7 +61,7 @@ Built with **FastAPI**. Exposes predictions and simulation results to the fronte
 
 | Endpoint | Description |
 |----------|-------------|
-| `GET /fixtures` | All 96 fixtures with predictions; syncs Elos first |
+| `GET /fixtures` | All 104 fixtures with predictions; syncs Elos first |
 | `GET /predict` | Win/draw/loss probabilities + xG for any matchup |
 | `GET /simulate` | Full tournament odds from Monte Carlo (cached) |
 | `POST /result` | Register a real scoreline; updates Elos and regenerates odds |
@@ -90,7 +90,7 @@ Built with **FastAPI**. Exposes predictions and simulation results to the fronte
 WC-Project/
 ├── data/
 │   ├── raw/
-│   │   └── wc2026_fixtures.csv       # All 96 WC fixtures with live results
+│   │   └── wc2026_fixtures.csv       # All 104 WC fixtures with live results
 │   └── processed/
 │       ├── elo_base.csv              # Pre-tournament Elo ratings (baseline)
 │       ├── elo_current.csv           # Live Elo ratings (updated after each match)
