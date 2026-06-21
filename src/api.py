@@ -87,11 +87,14 @@ def get_fixtures():
 
         # Played matches → use the pre-match logged prediction if available
         # Upcoming matches → use the live prediction
+        group = row.get("Group", "")
+        is_knockout = pd.isna(group) or str(group).strip() == ""
+
         if has_result and match_number in predictions_log:
             prediction = predictions_log[match_number]
         else:
             try:
-                prediction = predicting(home, away, neutral=True)
+                prediction = predicting(home, away, neutral=True, knockout=is_knockout)
             except Exception:
                 prediction = None
 

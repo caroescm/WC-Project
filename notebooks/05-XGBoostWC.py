@@ -23,7 +23,7 @@ from sklearn.model_selection import cross_val_score
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-TRAIN_CSV   = Path('/Users/carolinaescudero/Downloads/archive (1) 2/train.csv')
+TRAIN_CSV   = ROOT / 'data/raw/wc_train.csv'
 MATCHES_CSV = ROOT / 'data/processed/matches_clean.csv'
 ELO_CSV     = ROOT / 'data/processed/elo_history.csv'
 ROLLING_CSV = ROOT / 'data/processed/team_rolling_stats.csv'

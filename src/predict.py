@@ -4,6 +4,7 @@ import joblib
 from pathlib import Path
 from scipy.stats import poisson
 from collections import defaultdict
+from .config import name_map
 
 BASE_DIR = Path(__file__).parent.parent
 
@@ -96,7 +97,10 @@ def _team_feat(team: str, col: str, default: float) -> float:
     return default
 
 
-def predicting(home_team: str, away_team: str, neutral: bool = True):
+def predicting(home_team: str, away_team: str, neutral: bool = True, knockout: bool = False):
+    home_team = name_map.get(home_team, home_team)
+    away_team = name_map.get(away_team, away_team)
+
     home_elo = float(elo_current.loc[elo_current['team'] == home_team, 'elo'].values[0])
     away_elo = float(elo_current.loc[elo_current['team'] == away_team, 'elo'].values[0])
     elo_diff = home_elo - away_elo
@@ -181,6 +185,18 @@ def predicting(home_team: str, away_team: str, neutral: bool = True):
     final_home = ALPHA * p_home_win + (1 - ALPHA) * xgb_home
     final_draw = ALPHA * p_draw     + (1 - ALPHA) * xgb_draw
     final_away = ALPHA * p_away_win + (1 - ALPHA) * xgb_away
+
+    if knockout:
+        # No draws in knockout — redistribute draw probability proportionally to home/away
+        total_wo_draw = final_home + final_away
+        final_home += final_draw * (final_home / total_wo_draw)
+        final_away += final_draw * (final_away / total_wo_draw)
+        final_draw = 0.0
+    else:
+        # Draw boost: Poisson/XGBoost systematically underweight draws in WC football
+        DRAW_BOOST = 1.6
+        final_draw *= DRAW_BOOST
+
     total = final_home + final_draw + final_away
     final_home /= total
     final_draw /= total

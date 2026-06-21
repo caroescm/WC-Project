@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-TRAIN_CSV    = Path('/Users/carolinaescudero/Downloads/archive (1) 2/train.csv')
+TRAIN_CSV    = ROOT / 'data/raw/wc_train.csv'
 MATCHES_CSV  = ROOT / 'data/processed/matches_clean.csv'
 ELO_CURR_CSV = ROOT / 'data/processed/elo_current.csv'
 OUT_CSV      = ROOT / 'data/processed/team_features_2026.csv'

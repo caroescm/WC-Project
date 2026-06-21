@@ -58,7 +58,7 @@ def _sample_match(pred: dict) -> tuple[str, int, int]:
 
 def _sample_ko(home: str, away: str) -> str:
     """No draws: sample winner using HOME_WIN / (HOME_WIN + AWAY_WIN)."""
-    pred = _get_prediction(home, away)
+    pred = predicting(_normalize(home), _normalize(away), neutral=True, knockout=True)
     p_home = pred['HOME_WIN'] / (pred['HOME_WIN'] + pred['AWAY_WIN'])
     return home if np.random.random() < p_home else away
 
