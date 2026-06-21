@@ -37,16 +37,16 @@ export default function Navbar() {
         gap: 7,
       }}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="10" stroke="#1B4332" strokeWidth="1.8"/>
-          <path d="M12 2C12 2 8 7 8 12C8 17 12 22 12 22" stroke="#1B4332" strokeWidth="1.4" strokeLinecap="round"/>
-          <path d="M12 2C12 2 16 7 16 12C16 17 12 22 12 22" stroke="#1B4332" strokeWidth="1.4" strokeLinecap="round"/>
-          <path d="M2 12H22" stroke="#1B4332" strokeWidth="1.4" strokeLinecap="round"/>
-          <path d="M3.5 7H20.5" stroke="#1B4332" strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
-          <path d="M3.5 17H20.5" stroke="#1B4332" strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
+          <circle cx="12" cy="12" r="10" style={{ stroke: 'var(--accent)' }} strokeWidth="1.8"/>
+          <path d="M12 2C12 2 8 7 8 12C8 17 12 22 12 22" style={{ stroke: 'var(--accent)' }} strokeWidth="1.4" strokeLinecap="round"/>
+          <path d="M12 2C12 2 16 7 16 12C16 17 12 22 12 22" style={{ stroke: 'var(--accent)' }} strokeWidth="1.4" strokeLinecap="round"/>
+          <path d="M2 12H22" style={{ stroke: 'var(--accent)' }} strokeWidth="1.4" strokeLinecap="round"/>
+          <path d="M3.5 7H20.5" style={{ stroke: 'var(--accent)' }} strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
+          <path d="M3.5 17H20.5" style={{ stroke: 'var(--accent)' }} strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
         </svg>
         <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em' }}>
-          <span style={{ color: '#10241A' }}>Football</span>
-          <span style={{ color: '#1B4332' }}> Odds</span>
+          <span style={{ color: 'var(--foreground)' }}>Football</span>
+          <span style={{ color: 'var(--accent)' }}> Odds</span>
         </span>
       </Link>
 
@@ -54,9 +54,9 @@ export default function Navbar() {
       <nav style={{
         display: 'flex',
         alignItems: 'center',
-        background: '#ffffff',
+        background: 'var(--card-bg)',
         borderRadius: 0,
-        border: '1px solid #DCE4DA',
+        border: '1px solid var(--border)',
         
         padding: '4px',
         gap: 2,

@@ -52,8 +52,8 @@ export default function PerformanceAnalysis({ teamXG, teamGoals }: Props) {
   if (teams.length === 0) {
     return (
       <div className="card" style={{ padding: "10px 14px 14px", height: "100%" }}>
-        <div style={{ fontSize: "1rem", fontWeight: 400, color: "#0e1420" }}>Team Performance</div>
-        <p style={{ fontSize: "0.75rem", color: "#6b7280", marginTop: 3 }}>Awaiting first results.</p>
+        <div style={{ fontSize: "1rem", fontWeight: 400, color: "var(--foreground)" }}>Team Performance</div>
+        <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: 3 }}>Awaiting first results.</p>
       </div>
     );
   }
@@ -161,7 +161,7 @@ export default function PerformanceAnalysis({ teamXG, teamGoals }: Props) {
               style={{ cursor: "default" }}
             >
               {/* Track background */}
-              <line x1={TRACK_X} x2={TRACK_X + TRACK_W} y1={y} y2={y} stroke="#f3f4f6" strokeWidth={1}
+              <line x1={TRACK_X} x2={TRACK_X + TRACK_W} y1={y} y2={y} stroke="var(--border)" strokeWidth={1}
                 style={{
                   opacity: mounted ? 1 : 0,
                   transition: `opacity 0.3s ease ${delay}ms`,
@@ -189,7 +189,7 @@ export default function PerformanceAnalysis({ teamXG, teamGoals }: Props) {
               />
 
               {/* xG dot pops in */}
-              <circle cx={xXG} cy={y} r={isH ? 5 : 4} fill="#fff" stroke={XG_COLOR} strokeWidth={1.5}
+              <circle cx={xXG} cy={y} r={isH ? 5 : 4} fill="var(--card-bg)" stroke={XG_COLOR} strokeWidth={1.5}
                 style={{
                   transformBox: "fill-box",
                   transformOrigin: "center",

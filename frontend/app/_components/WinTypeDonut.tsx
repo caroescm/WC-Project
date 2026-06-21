@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 import { parseScore } from "./dateUtils";
 
@@ -18,7 +19,7 @@ const CX = 90;
 const CY = 90;
 const C  = 2 * Math.PI * R;
 
-export default function WinTypeDonut({ played }: { played: Fixture[] }) {
+export default function WinTypeDonut({ played, showSeeAll }: { played: Fixture[]; showSeeAll?: boolean }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { const t = setTimeout(() => setMounted(true), 100); return () => clearTimeout(t); }, []);
   const groupPlayed = played.filter(f => f.group && f.result);
@@ -54,6 +55,7 @@ export default function WinTypeDonut({ played }: { played: Fixture[] }) {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--foreground)" }}>Win Types</span>
+        {showSeeAll && <Link href="/results" className="back-link">See All ↗</Link>}
       </div>
 
       {/* Chart + legend */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 
 interface Prediction { HOME_WIN: number; DRAW: number; AWAY_WIN: number }
@@ -22,16 +23,16 @@ const BUCKET_META: { key: Bucket; label: string; color: string }[] = [
 ];
 
 const TAG_COLOR = (score: number) =>
-  score > 0.3 ? { bg: "#F3E3DF", text: "#B5483F" }
-  : score > 0.1 ? { bg: "#FEF5DC", text: "#9B6E00" }
-  : { bg: "#D4EDE0", text: "#2E8B57" };
+  score > 0.3 ? { bg: "var(--negative-dim)", text: "var(--negative)" }
+  : score > 0.1 ? { bg: "var(--risk-dim)", text: "var(--risk)" }
+  : { bg: "var(--positive-dim)", text: "var(--positive)" };
 
 const TAG_LABEL = (score: number) =>
   score > 0.3 ? "Very Unpredictable"
   : score > 0.1 ? "Moderate"
   : "Predictable";
 
-export default function UnpredictableGroups({ fixtures }: { fixtures: Fixture[] }) {
+export default function UnpredictableGroups({ fixtures, showSeeAll }: { fixtures: Fixture[]; showSeeAll?: boolean }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { const t = setTimeout(() => setMounted(true), 80); return () => clearTimeout(t); }, []);
 
@@ -57,7 +58,7 @@ export default function UnpredictableGroups({ fixtures }: { fixtures: Fixture[] 
   if (groups.length === 0) {
     return (
       <div className="card" style={{ padding: "10px 14px 14px" }}>
-        <div style={{ fontSize: "1rem", fontWeight: 400, color: "#0e1420" }}>Group Predictability</div>
+        <div style={{ fontSize: "1rem", fontWeight: 400, color: "var(--foreground)" }}>Group Predictability</div>
         <p style={{ fontSize: "0.75rem", color: "var(--text-faint)", marginTop: 8 }}>Awaiting fixture data.</p>
       </div>
     );
@@ -69,6 +70,7 @@ export default function UnpredictableGroups({ fixtures }: { fixtures: Fixture[] 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--foreground)" }}>Group Predictability</span>
+        {showSeeAll && <Link href="/groups" className="back-link">See All ↗</Link>}
       </div>
 
       {/* Rows */}

@@ -64,7 +64,7 @@ export default async function ResultsPage() {
           { label: "vs Home-Win Baseline", value: delta !== null ? `${delta >= 0 ? "+" : ""}${delta.toFixed(1)} pts` : "—", sub: basePct ? `Baseline: ${basePct}%` : "Awaiting results", color: delta !== null ? (delta >= 0 ? "var(--positive)" : "var(--negative)") : "var(--foreground)" },
           { label: "Avg Draw Probability",  value: avgDraw ? `${avgDraw}%` : "—",  sub: drawProbs.length ? `${drawProbs.length} draws so far` : "No draws yet", color: "var(--foreground)" },
         ].map(s => (
-          <div key={s.label} style={{ background: "#fff", borderRadius: 0, padding: "10px 14px 12px", display: "flex", flexDirection: "column", minHeight: 90 }}>
+          <div key={s.label} style={{ background: "var(--card-bg)", borderRadius: 0, padding: "10px 14px 12px", display: "flex", flexDirection: "column", minHeight: 90 }}>
             <span style={{ fontSize: "0.625rem", fontWeight: 700, color: "var(--text-faint)", letterSpacing: "0.07em", textTransform: "uppercase" }}>{s.label}</span>
             <span style={{ fontSize: "1.625rem", fontWeight: 400, color: s.color, letterSpacing: "-0.02em", lineHeight: 1, marginTop: 10, fontVariantNumeric: "tabular-nums" }}>{s.value}</span>
             <span style={{ fontSize: "0.6875rem", color: "var(--text-faint)", marginTop: "auto", paddingTop: 8 }}>{s.sub}</span>

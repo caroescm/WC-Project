@@ -102,7 +102,7 @@ export default function AccuracyChart({ matchLog }: { matchLog: MatchEntry[] }) 
         <div style={{ position: "relative" }}>
           {finalAcc !== null && (
             <div style={{ position: "absolute", top: 0, right: 0, textAlign: "right", pointerEvents: "none", zIndex: 1 }}>
-              <span className="num-lg" style={{ fontSize: "1.4rem", fontWeight: 400, color: "var(--accent)", lineHeight: 1, opacity: 0.18 }}>
+              <span className="num-lg" style={{ fontSize: "1.4rem", fontWeight: 400, color: "var(--accent)", lineHeight: 1, opacity: 0.55 }}>
                 {(finalAcc * 100).toFixed(0)}%
               </span>
             </div>

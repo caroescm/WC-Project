@@ -131,7 +131,7 @@ export default function ResultsTable({ rows }: { rows: Row[] }) {
       {/* Header + controls */}
       <div style={{ padding: "10px 14px 8px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: "1rem", fontWeight: 400, color: "#0e1420" }}>Predictions</span>
+          <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--foreground)" }}>Predictions</span>
           <span style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>{rows.length} matches</span>
         </div>
 
@@ -165,7 +165,7 @@ export default function ResultsTable({ rows }: { rows: Row[] }) {
                 style={{
                   padding: "3px 9px", fontSize: "0.625rem", fontWeight: 600,
                   border: "none", borderRadius: 0, cursor: "pointer",
-                  background: stage === key ? "#2E8B57" : "transparent",
+                  background: stage === key ? "var(--positive)" : "transparent",
                   color:      stage === key ? "#ffffff"  : "var(--toggle-inactive)",
                   transition: "all 0.15s", whiteSpace: "nowrap",
                 }}
@@ -184,7 +184,7 @@ export default function ResultsTable({ rows }: { rows: Row[] }) {
                 style={{
                   padding: "3px 9px", fontSize: "0.625rem", fontWeight: 600,
                   border: "none", borderRadius: 0, cursor: "pointer",
-                  background: filter === key ? "#2E8B57" : "transparent",
+                  background: filter === key ? "var(--positive)" : "transparent",
                   color:      filter === key ? "#ffffff"  : "var(--toggle-inactive)",
                   transition: "all 0.15s", whiteSpace: "nowrap",
                 }}

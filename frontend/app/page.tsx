@@ -155,9 +155,9 @@ export default async function Home() {
 
       {/* ── 3. BOTTOM PANELS ───────────────────────────────────── */}
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, flex:1, minHeight:0 }}>
-        <WinTypeDonut played={played} />
+        <WinTypeDonut played={played} showSeeAll />
         <PerformanceAnalysis teamXG={stats?.teamXG ?? {}} teamGoals={stats?.teamGoals ?? {}} />
-        <UnpredictableGroups fixtures={fixtures} />
+        <UnpredictableGroups fixtures={fixtures} showSeeAll />
       </div>
 
     </div>
