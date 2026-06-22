@@ -1,10 +1,10 @@
-# World Cup Forecast Dashboard — Project Roadmap
+# World Cup 2026 Forecast Dashboard — Project Roadmap
 
-> **Tournament start:** June 11, 2026 · **Today:** May 7, 2026 · **~5 weeks to go**
+> **Tournament:** June 11 – July 19, 2026 · **Updated:** June 21, 2026
 >
-> The goal is a probabilistic forecast lab — not a certainty predictor — that
-> publishes pre-match win/draw/loss probabilities, simulates tournament outcomes,
-> and tracks model performance as real results come in.
+> A probabilistic forecast lab that publishes pre-match win/draw/loss probabilities,
+> simulates tournament outcomes via Monte Carlo, and tracks model performance as
+> real results come in.
 
 ---
 
@@ -19,158 +19,115 @@
 
 ---
 
-## Phase 1 — Modeling
-*Target: May 7–18*
+## Phase 1 — Modeling ✅
+*Status: Complete — exceeded original scope*
 
-### 1.1 Baseline model
-- Features: Elo difference, home/neutral flag
-- Target: win / draw / loss (3-class multinomial)
-- Model: Logistic Regression (multinomial)
-- Output: `model_baseline.pkl`, baseline accuracy + log loss
+Skipped the planned logistic regression baseline and went straight to a two-model ensemble.
 
-### 1.2 Feature engineering
-- Rolling form: last-5-match win rate per team
-- Rolling goal difference: average over last 5 matches
-- Match importance weight (World Cup, qualifier, friendly)
-- Head-to-head record (last 5 meetings)
+### 1.1 Poisson xG model
+- EWM rolling attack/defense stats (span-5 and span-10) weighted by opponent Elo
+- 15×15 joint scoreline probability matrix
+- **Dixon-Coles correction** (ρ = −0.13) to fix Poisson's underestimation of low-scoring draws
+- **Neutral ground correction**: predictions averaged symmetrically from both team perspectives
+- **Draw calibration**: 1.6× boost for group stage; redistribution for knockout rounds
+- Output: `model_home.pkl`, `model_away.pkl`
 
-### 1.3 Full prediction model
-- Model: Gradient Boosting (XGBoost or LightGBM)
-- Features: Elo diff + all engineered features
-- Calibrated probabilities (Platt scaling or isotonic regression)
-- Output: `model_v1.pkl`
+### 1.2 XGBoost classifier
+- Trained specifically on World Cup match data
+- Features: Elo gap, market value differential (log-scaled), FIFA ranking difference, 4-year win rate, World Cup titles, tournament experience
+- Output: `model_xgb_wc.pkl`
 
-### 1.4 Score / expected-goals model
-- Poisson regression for goals scored per team
-- Output: expected goals (xG) for each team, likely score range
+### 1.3 Ensemble
+- 60% Poisson xG / 40% XGBoost weighted blend
+- Outputs calibrated P(home win), P(draw), P(away win) + xG per team
 
-### 1.5 Backtesting
-- Backtest on past World Cups: 2014, 2018, 2022
-- Metrics: accuracy, log loss, Brier score, calibration curve
-- Output: `backtest_results.csv`, calibration plots
+### 1.4 Backtesting
+- ❌ Not completed — deprioritized in favour of shipping the live dashboard
 
 ---
 
-## Phase 2 — Tournament Simulator
-*Target: May 18–23*
+## Phase 2 — Tournament Simulator ✅
+*Status: Complete*
 
 ### 2.1 Group stage simulator
-- Draw 2026 WC groups (48 teams, 12 groups of 4)
-- Simulate each group match using model probabilities
-- Output group standings with tiebreaker rules
+- 48 teams, 12 groups of 4
+- Simulates each group match from predicted probabilities, samples goals from Poisson(λ)
+- Full tiebreaker logic: points → goal difference → goals scored
 
 ### 2.2 Knockout stage simulator
-- Simulate Round of 32 → Round of 16 → QF → SF → Final
-- Handle draws via extra-time / penalty shootout probability
+- Round of 32 → Round of 16 → QF → SF → Final
+- No-draw rules (extra time / penalties modelled as coin flip)
+- **Backtracking search** with most-constrained-first ordering to assign the 8 best third-place teams to correct bracket slots
 
 ### 2.3 Monte Carlo engine
-- Run 10,000+ tournament simulations
-- Output: each team's probability to reach each stage (R32, R16, QF, SF, Final, Win)
-- Output: `simulation_results.csv`
+- **3,000 full tournament simulations** per run
+- Output per team: `{ r32, r16, qf, sf, final, winner }` as probabilities
+- Simulation cache invalidated automatically when a real result is posted
 
 ---
 
-## Phase 3 — Backend API
-*Target: May 23–30*
+## Phase 3 — Backend API ✅
+*Status: Complete · Deployed on Railway*
 
-### 3.1 Setup
-- FastAPI project scaffold
-- Load model, Elo ratings, simulation results at startup
-
-### 3.2 Endpoints
 | Endpoint | Description |
 |----------|-------------|
-| `GET /teams` | All teams with Elo rating and tournament odds |
-| `GET /teams/{team}` | Team detail: strength, form, recent results |
-| `GET /matches` | All scheduled WC matches |
-| `GET /matches/{id}/prediction` | Win/draw/loss probs + expected goals |
-| `GET /groups` | Group tables with simulated standings |
-| `GET /simulate` | Full tournament simulation (cached) |
-| `GET /results` | Actual results vs. predictions so far |
-| `GET /model/performance` | Accuracy, log loss, Brier score, calibration |
+| `GET /fixtures` | All fixtures with live predictions; syncs Elos first |
+| `GET /predict` | Win/draw/loss + xG for any matchup |
+| `GET /simulate` | Full tournament odds from Monte Carlo (cached, 1h TTL) |
+| `POST /result` | Register a real scoreline; updates Elos and regenerates odds |
 
-### 3.3 Deployment
-- Deploy to Render, Fly.io, or Railway
-- CORS configured for frontend origin
+**Prediction logging:** Before updating Elos, the API captures and saves the pre-match prediction to `predictions_log.csv` — preserving a clean record for post-tournament model calibration.
+
+Planned but not built: `/teams`, `/groups`, `/model/performance` endpoints.
 
 ---
 
-## Phase 4 — Frontend Dashboard
-*Target: May 30 – June 7*
+## Phase 4 — Frontend Dashboard ✅
+*Status: Complete · Deployed on Vercel*
 
-### 4.1 Setup
-- Next.js + TypeScript scaffold
-- Recharts (or ECharts) for visualizations
-- Deploy to Vercel
+### Pages built
 
-### 4.2 Pages
+| Page | Contents |
+|------|----------|
+| **Dashboard** | KPI cards (favorite, outperforming, underperforming, accuracy, remaining) · Monte Carlo bar chart · Rolling accuracy line chart · Win type donut · xG vs goals performance · Group predictability |
+| **Predictions** | Tournament Odds table (sortable, filterable by stage) · Match Predictions (upcoming fixtures with probability bars, upset alerts) · Bracket (R32 draw + round filter + simulation favorites per round) |
+| **Results** | Stat summary (accuracy, vs baseline, avg draw prob) · Paginated results table with predicted vs actual |
+| **Teams** | Per-team Elo, form, simulation odds |
+| **Groups** | Group standings with simulated qualification probabilities |
 
-#### Match Predictions
-- Upcoming WC matches with win / draw / loss probability bars
-- Expected goals for each team
-- Head-to-head Elo history chart
-
-#### Team Pages
-- Elo rating over time (line chart)
-- Recent form (last 10 matches)
-- Tournament simulation odds (bar chart: odds to reach each stage)
-
-#### Group Table Simulator
-- Simulated group standings with probability ranges
-- Toggle between "most likely" and "distribution view"
-
-#### Tournament Bracket
-- Knockout tree with win probabilities at each node
-- Color-coded by confidence
-
-#### Results Tracker *(goes live June 11)*
-- Actual vs. predicted result for each match played
-- Visual indicator: correct / incorrect / well-calibrated
-
-#### Model Performance
-- Running accuracy, log loss, Brier score
-- Calibration curve: predicted probability vs. actual frequency
-- "Biggest upset so far" callout
-
-### 4.3 Nice-to-haves (post-launch)
+### Not built
+- Model Performance page (calibration curve, Brier score, log loss visualization)
 - Qualification scenarios ("what does Team X need to advance?")
 - "What changed after today's matches?" digest
-- Explainability panel: top features influencing a prediction
-- Most improved team rating
+- Explainability panel (top features per prediction)
 
 ---
 
-## Phase 5 — Live Tournament (June 11 – July 19)
-*Target: Automated updates*
+## Phase 5 — Live Tournament ✅ (in progress)
+*June 11 – July 19 · Group stage ongoing*
 
 ### 5.1 Results ingestion
-- Script to fetch actual match results (manual CSV update or live API)
-- Recalculate Elo ratings after each match
-- Re-run tournament simulations nightly
+- Manual: real scorelines registered via `POST /result`
+- Elo ratings recalculate after each match
+- Simulation cache regenerates automatically
+- Knockout bracket slots updated manually in `wc2026_fixtures.csv` as teams advance
 
-### 5.2 Model performance tracking
-- Log each prediction before kickoff
-- Score each prediction after full-time
-- Update leaderboard of model metrics in real time
+### 5.2 Prediction logging
+- `predictions_log.csv` captures pre-match predictions before each result is posted
+- Data accumulates throughout the tournament for post-tournament calibration
 
 ### 5.3 Automation
-- Cron job (or GitHub Actions) to update data and re-deploy after each match day
-- Alert if model performance degrades significantly
+- ❌ No cron job or GitHub Actions — updates are manual
 
 ---
 
-## Milestone Summary
+## What's Left
 
-| # | Milestone | Target Date |
-|---|-----------|-------------|
-| M0 | Data cleaned, Elo pipeline running | ✅ May 7 |
-| M1 | Baseline model trained and backtested | May 18 |
-| M2 | Tournament simulator producing odds | May 23 |
-| M3 | Backend API live (Render/Fly.io) | May 30 |
-| M4 | Frontend dashboard deployed (Vercel) | June 7 |
-| M5 | **World Cup kicks off** | June 11 |
-| M6 | Live results + model tracking active | June 14 |
-| M7 | Final, post-tournament analysis | July 20 |
+| Item | Priority |
+|------|----------|
+| Model Performance page (calibration curve) | Medium |
+| Bracket slot updates as R32 starts (Jun 28) | High |
+| Post-tournament calibration analysis | Low — after Jul 19 |
 
 ---
 
@@ -179,31 +136,9 @@
 | Layer | Tech |
 |-------|------|
 | Frontend | Next.js + TypeScript |
-| Charts | Recharts or ECharts |
+| Charts | Recharts / SVG (hand-rolled) |
 | Backend | Python + FastAPI |
-| Modeling | pandas, scikit-learn, XGBoost |
-| Data | CSV → DuckDB (later) |
+| ML models | scikit-learn, XGBoost, scipy |
+| Data pipeline | pandas |
 | Frontend deploy | Vercel |
-| Backend deploy | Render / Fly.io / Railway |
-
----
-
-## Current Files
-
-```
-WC-Project/
-├── results.csv          # raw historical results (source)
-├── goalscorers.csv      # raw goalscorer data (future use)
-├── shootouts.csv        # raw shootout data (future use)
-├── former_names.csv     # team name history (for normalization)
-├── matches_clean.csv    # ✅ cleaned match records
-├── elo_history.csv      # ✅ per-match Elo snapshots (98k rows)
-├── elo_current.csv      # ✅ current Elo for 333 teams
-├── clean_matches.py     # ✅ cleaning script
-├── build_elo.py         # ✅ Elo pipeline script
-└── ROADMAP.md           # this file
-```
-
----
-
-*Next step: Phase 1.1 — train the baseline logistic regression model using Elo difference as the sole feature.*
+| Backend deploy | Railway |

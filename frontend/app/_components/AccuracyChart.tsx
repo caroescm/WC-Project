@@ -137,7 +137,7 @@ export default function AccuracyChart({ matchLog }: { matchLog: MatchEntry[] }) 
               );
             })}
 
-            {/* Area fill + line — revealed left-to-right */}
+            {/* Area fill + line */}
             <g clipPath="url(#line-reveal)">
               {n > 1 && <path d={areaPath} fill="url(#acc-area)" />}
               {n > 1 && (
@@ -152,7 +152,7 @@ export default function AccuracyChart({ matchLog }: { matchLog: MatchEntry[] }) 
               )}
             </g>
 
-            {/* Invisible hover targets — one per point */}
+            {/* Hover targets */}
             {pts.map((p, i) => {
               const prevX = i > 0 ? (pts[i - 1].x + p.x) / 2 : PAD.l;
               const nextX = i < pts.length - 1 ? (p.x + pts[i + 1].x) / 2 : PAD.l + cW;
@@ -169,7 +169,6 @@ export default function AccuracyChart({ matchLog }: { matchLog: MatchEntry[] }) 
               );
             })}
 
-            {/* Hover indicator dot — only shown on hover */}
             {tooltip && (
               <circle
                 cx={tooltip.x.toFixed(1)} cy={tooltip.y.toFixed(1)} r="4.5"
@@ -179,7 +178,6 @@ export default function AccuracyChart({ matchLog }: { matchLog: MatchEntry[] }) 
               />
             )}
 
-            {/* X-axis match labels */}
             <text x={PAD.l} y={CHART_H - 8} textAnchor="middle"
               style={{ fontSize: 8, fill: "var(--text-faint)" }}>1</text>
             {n > 1 && (
@@ -188,7 +186,6 @@ export default function AccuracyChart({ matchLog }: { matchLog: MatchEntry[] }) 
             )}
           </svg>
 
-          {/* Tooltip */}
           {tooltip && (
             <div style={{
               position: "absolute",
