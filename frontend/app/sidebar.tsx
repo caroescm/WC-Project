@@ -10,6 +10,7 @@ const NAV = [
   { href: '/results',      label: 'Results'     },
   { href: '/teams',        label: 'Teams'       },
   { href: '/groups',       label: 'Groups'      },
+  { href: '/stages',       label: 'Stages'      },
 ];
 
 export default function Navbar() {
