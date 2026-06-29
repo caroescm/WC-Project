@@ -498,8 +498,14 @@ const MEDAL_COLORS: Record<number, { color: string; bg: string; border: string }
   2: { color: "#7A4E2D", bg: "rgba(180,100,60,0.08)", border: "rgba(180,100,60,0.35)" },
 };
 
-function BracketTab({ simulation }: { simulation: Simulation }) {
+function BracketTab({ simulation, fixtures }: { simulation: Simulation; fixtures: Fixture[] }) {
   const [activeRound, setActiveRound] = useState<BracketRound>("r32");
+
+  // Live knockout matchups keyed by match number (overrides the static slot codes once teams are drawn)
+  const fixtureByNum = useMemo(
+    () => Object.fromEntries(fixtures.map(f => [f.match_number, f])),
+    [fixtures]
+  );
 
   const topFor = (key: keyof SimEntry, n: number) =>
     [...Object.entries(simulation)]
@@ -519,7 +525,7 @@ function BracketTab({ simulation }: { simulation: Simulation }) {
   const roundIndex = BRACKET_ROUNDS.findIndex(r => r.key === activeRound);
 
   // ── Match card (R32 — known slot codes) ──
-  const KnownMatchCard = ({ matchNum, date, home, away }: { matchNum: number; date: string; home: string; away: string }) => (
+  const KnownMatchCard = ({ matchNum, date, home, away, result }: { matchNum: number; date: string; home: string; away: string; result?: string | null }) => (
     <div style={{
       background: "var(--card-bg)",
       border: "1px solid var(--border)",
@@ -543,10 +549,11 @@ function BracketTab({ simulation }: { simulation: Simulation }) {
           textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
         }}>{home}</span>
         <span style={{
-          fontSize: "0.5625rem", fontWeight: 800, color: "var(--text-faint)",
+          fontSize: result ? "0.6875rem" : "0.5625rem", fontWeight: 800,
+          color: result ? "var(--accent)" : "var(--text-faint)",
           border: "1px solid var(--border)", padding: "2px 5px", flexShrink: 0,
-          letterSpacing: "0.04em",
-        }}>VS</span>
+          letterSpacing: "0.04em", whiteSpace: "nowrap",
+        }}>{result ? result : "VS"}</span>
         <span style={{
           fontSize: "0.8125rem", fontWeight: 700, color: "var(--foreground)",
           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
@@ -701,7 +708,19 @@ function BracketTab({ simulation }: { simulation: Simulation }) {
         ...(activeRound === "final" ? { maxWidth: 320 } : {}),
       }}>
         {activeRound === "r32"
-          ? R32_MATCHES.map(m => <KnownMatchCard key={m.matchNum} {...m} />)
+          ? R32_MATCHES.map(m => {
+              const f = fixtureByNum[m.matchNum];
+              return (
+                <KnownMatchCard
+                  key={m.matchNum}
+                  matchNum={m.matchNum}
+                  date={f?.date ?? m.date}
+                  home={f?.home_team ?? m.home}
+                  away={f?.away_team ?? m.away}
+                  result={f?.result}
+                />
+              );
+            })
           : Array.from({ length: round.slots }, (_, i) => <TBDCard key={i} i={i} />)
         }
       </div>
@@ -771,7 +790,7 @@ export function PredictionsClient({ simulation, fixtures }: { simulation: Simula
 
       {tab === "simulation" ? <SimulationTab simulation={simulation} />
         : tab === "matches" ? <MatchPredictionsTab fixtures={fixtures} />
-        : <BracketTab simulation={simulation} />
+        : <BracketTab simulation={simulation} fixtures={fixtures} />
       }
     </div>
   );

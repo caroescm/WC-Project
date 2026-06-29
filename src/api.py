@@ -104,7 +104,7 @@ def get_fixtures():
             "location":     row["Location"],
             "home_team":    row["Home Team"],
             "away_team":    row["Away Team"],
-            "group":        row.get("Group", ""),
+            "group":        "" if pd.isna(group) else group,
             "result":       row["Result"] if pd.notna(row["Result"]) else None,
             "prediction":   prediction,
         })
