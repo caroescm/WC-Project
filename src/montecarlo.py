@@ -150,6 +150,8 @@ def _assign_third_place(rankings: dict, standings: dict) -> dict:
 
 
 def _resolve_slot(slot: str, rankings: dict, third_assignments: dict) -> str:
+    if not slot[0].isdigit():
+        return slot  # already a real team name (group stage finished)
     position = int(slot[0])
     if slot[1].isalpha() and len(slot) == 2:
         group = 'Group ' + slot[1]
