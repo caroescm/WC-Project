@@ -28,10 +28,10 @@ def _normalize(team: str) -> str:
     return name_map.get(team, team)
 
 
-def _get_prediction(home: str, away: str) -> dict:
-    key = (home, away)
+def _get_prediction(home: str, away: str, knockout: bool = False) -> dict:
+    key = (home, away, knockout)
     if key not in _pred_cache:
-        _pred_cache[key] = predicting(_normalize(home), _normalize(away), neutral=True)
+        _pred_cache[key] = predicting(_normalize(home), _normalize(away), neutral=True, knockout=knockout)
     return _pred_cache[key]
 
 
@@ -52,7 +52,7 @@ def _sample_match(pred: dict) -> tuple[str, int, int]:
 
 def _sample_ko(home: str, away: str) -> str:
     """No draws: sample winner using HOME_WIN / (HOME_WIN + AWAY_WIN)."""
-    pred = predicting(_normalize(home), _normalize(away), neutral=True, knockout=True)
+    pred = _get_prediction(home, away, knockout=True)
     p_home = pred['HOME_WIN'] / (pred['HOME_WIN'] + pred['AWAY_WIN'])
     return home if np.random.random() < p_home else away
 
