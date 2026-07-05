@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from pydantic import BaseModel
 import pandas as pd
-from .predict import predicting
+from .predict import predicting, reload_data
 from .config import name_map
 from .elo import register_result, sync_elos_from_fixtures
 
@@ -144,6 +144,7 @@ def post_result(body: ResultInput):
                 pass
 
         result = register_result(body.match_number, body.home_score, body.away_score)
+        reload_data()
         invalidate_cache()
         return result
     except ValueError as e:
