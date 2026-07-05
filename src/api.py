@@ -107,6 +107,7 @@ def get_fixtures():
             "away_team":    row["Away Team"],
             "group":        "" if pd.isna(group) else group,
             "result":       row["Result"] if pd.notna(row["Result"]) else None,
+            "penalties":    row["Penalties"] if pd.notna(row.get("Penalties")) else None,
             "prediction":   prediction,
         })
 
@@ -123,6 +124,8 @@ class ResultInput(BaseModel):
     match_number: int
     home_score:   int
     away_score:   int
+    home_pens:    int | None = None
+    away_pens:    int | None = None
 
 
 @app.post("/result")
@@ -144,7 +147,8 @@ def post_result(body: ResultInput):
             except Exception:
                 pass
 
-        result = register_result(body.match_number, body.home_score, body.away_score)
+        result = register_result(body.match_number, body.home_score, body.away_score,
+                                  body.home_pens, body.away_pens)
         reload_data()
         invalidate_cache()
         return result

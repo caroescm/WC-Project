@@ -4,7 +4,7 @@ import PerformanceAnalysis from "./_components/PerformanceAnalysis";
 import WinTypeDonut from "./_components/WinTypeDonut";
 import UnpredictableGroups from "./_components/UnpredictableGroups";
 import TournamentBadge from "./_components/TournamentBadge";
-import { parseScore, bestOutcomeKey } from "./_components/dateUtils";
+import { parseScore, bestOutcomeKey, actualOutcomeKey } from "./_components/dateUtils";
 import { Fixture, BASE } from "./_components/types";
 
 type SimEntry = { r32:number; r16:number; qf:number; sf:number; final:number; winner:number };
@@ -21,7 +21,7 @@ function deriveStats(played: Fixture[]) {
     if (!parsed) continue;
     const [hs, as_] = parsed;
     const { HOME_WIN, DRAW, AWAY_WIN, home_xg, away_xg } = f.prediction;
-    const actual = hs > as_ ? "HOME_WIN" : hs < as_ ? "AWAY_WIN" : "DRAW";
+    const actual = actualOutcomeKey(hs, as_, f.penalties);
     const best   = bestOutcomeKey(f.prediction);
     if (best === actual) correct++;
     xgDelta[f.home_team]  = (xgDelta[f.home_team]  ?? 0) + (hs  - home_xg);
@@ -61,7 +61,7 @@ export default async function Home() {
     const parsed = parseScore(f.result!);
     if (!parsed) return [];
     const [hs, as_] = parsed;
-    const actual = hs > as_ ? "HOME_WIN" : hs < as_ ? "AWAY_WIN" : "DRAW";
+    const actual = actualOutcomeKey(hs, as_, f.penalties);
     const best   = bestOutcomeKey(f.prediction);
     return [{ ok: best === actual, home: f.home_team, away: f.away_team, match_number: f.match_number }];
   });

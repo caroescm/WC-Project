@@ -125,10 +125,20 @@ def sync_elos_from_fixtures():
         goal_diff = abs(home_score - away_score)
         mov = np.log(goal_diff + 1)
 
+        pens = str(row.get("Penalties", "")) if pd.notna(row.get("Penalties")) else ""
+        home_pens = away_pens = None
+        if "-" in pens:
+            try:
+                home_pens, away_pens = [int(x) for x in pens.split("-")]
+            except Exception:
+                pass
+
         if home_score > away_score:
             actual_home, actual_away = 1.0, 0.0
         elif home_score < away_score:
             actual_home, actual_away = 0.0, 1.0
+        elif home_pens is not None and away_pens is not None and home_pens != away_pens:
+            actual_home, actual_away = (1.0, 0.0) if home_pens > away_pens else (0.0, 1.0)
         else:
             actual_home, actual_away = 0.5, 0.5
 
@@ -152,8 +162,16 @@ def update_elo(rating, expected, actual, k, mov):
     return rating + k * mov * (actual - expected)
 
 
-def register_result(match_number: int, home_score: int, away_score: int):
-    """Update fixtures CSV and elo_current.csv after a match is played."""
+def register_result(match_number: int, home_score: int, away_score: int,
+                     home_pens: int = None, away_pens: int = None):
+    """Update fixtures CSV and elo_current.csv after a match is played.
+
+    home_score/away_score must be the 90-/120-minute goal count only — never include
+    penalty-shootout kicks, since those goals also drive the rolling attack/defense
+    stats and the goals-vs-xG comparisons. If the match was decided on penalties,
+    pass home_pens/away_pens separately; they only affect which side counts as the
+    ELO winner, not the recorded scoreline.
+    """
 
     fixtures_path = BASE_DIR / "data/raw/wc2026_fixtures.csv"
     elo_path = BASE_DIR / "data/processed/elo_current.csv"
@@ -185,6 +203,8 @@ def register_result(match_number: int, home_score: int, away_score: int):
         actual_home, actual_away = 1.0, 0.0
     elif home_score < away_score:
         actual_home, actual_away = 0.0, 1.0
+    elif home_pens is not None and away_pens is not None and home_pens != away_pens:
+        actual_home, actual_away = (1.0, 0.0) if home_pens > away_pens else (0.0, 1.0)
     else:
         actual_home, actual_away = 0.5, 0.5
 
@@ -205,6 +225,9 @@ def register_result(match_number: int, home_score: int, away_score: int):
     # Update result in fixtures (cast to object first so string assignment works on an all-null column)
     fixtures["Result"] = fixtures["Result"].astype(object)
     fixtures.loc[mask, "Result"] = f"{home_score} - {away_score}"
+    if home_pens is not None and away_pens is not None:
+        fixtures["Penalties"] = fixtures["Penalties"].astype(object)
+        fixtures.loc[mask, "Penalties"] = f"{home_pens} - {away_pens}"
     fixtures.to_csv(fixtures_path, index=False)
 
     return {

@@ -16,6 +16,7 @@ export interface Fixture {
   away_team: string;
   group: string;
   result: string | null;
+  penalties: string | null;
   prediction: Prediction;
 }
 

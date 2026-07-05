@@ -1,4 +1,4 @@
-import { parseScore, predictedOutcome, bestOutcomeKey } from "../_components/dateUtils";
+import { parseScore, predictedOutcome, bestOutcomeKey, actualOutcomeKey } from "../_components/dateUtils";
 import ResultsTable from "./ResultsTable";
 import { Fixture, BASE } from "../_components/types";
 
@@ -16,10 +16,10 @@ export default async function ResultsPage() {
     if (!parsed) return;
     const [hs, as_] = parsed;
     const { DRAW } = f.prediction;
-    const actual = hs > as_ ? "HOME_WIN" : hs < as_ ? "AWAY_WIN" : "DRAW";
+    const actual = actualOutcomeKey(hs, as_, f.penalties);
     const best   = bestOutcomeKey(f.prediction);
     if (best === actual) correct++;
-    if (hs > as_) homeWins++;
+    if (actual === "HOME_WIN") homeWins++;
     if (actual === "DRAW") drawProbs.push(DRAW);
   });
 
@@ -33,14 +33,16 @@ export default async function ResultsPage() {
     const parsed = parseScore(f.result!);
     if (!parsed) return [];
     const [hs, as_] = parsed;
-    const pred   = predictedOutcome(f.prediction);
-    const actual = hs > as_ ? "Home Win" : hs < as_ ? "Away Win" : "Draw";
-    const ok     = pred === actual;
+    const pred      = predictedOutcome(f.prediction);
+    const actualKey = actualOutcomeKey(hs, as_, f.penalties);
+    const actual    = actualKey === "HOME_WIN" ? "Home Win" : actualKey === "AWAY_WIN" ? "Away Win" : "Draw";
+    const ok        = bestOutcomeKey(f.prediction) === actualKey;
     return [{
       matchNumber: f.match_number,
       home: f.home_team,
       away: f.away_team,
       hs, as_,
+      pens: hs === as_ ? f.penalties : null,
       h: Math.round(f.prediction.HOME_WIN * 100),
       d: Math.round(f.prediction.DRAW * 100),
       a: Math.round(f.prediction.AWAY_WIN * 100),

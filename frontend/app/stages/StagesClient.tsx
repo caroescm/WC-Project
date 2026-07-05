@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Fixture } from "../_components/types";
-import { parseScore, bestOutcomeKey } from "../_components/dateUtils";
+import { parseScore, bestOutcomeKey, actualOutcomeKey } from "../_components/dateUtils";
 
 // Match-number ranges per stage (group stage is matches 1–72)
 const STAGES = [
@@ -57,7 +57,7 @@ function buildFindings(fixtures: Fixture[], lo: number, hi: number) {
     if (!parsed) continue;
     const [hs, as_] = parsed;
     const p = f.prediction;
-    const actualKey = hs > as_ ? "HOME_WIN" : hs < as_ ? "AWAY_WIN" : "DRAW";
+    const actualKey = actualOutcomeKey(hs, as_, f.penalties);
     const probOfActual = actualKey === "HOME_WIN" ? p.HOME_WIN : actualKey === "AWAY_WIN" ? p.AWAY_WIN : p.DRAW;
     const elo = eloDeltas(p.home_elo ?? 1500, p.away_elo ?? 1500, hs, as_);
 
@@ -70,7 +70,7 @@ function buildFindings(fixtures: Fixture[], lo: number, hi: number) {
       actualKey,
       correct: bestOutcomeKey(p) === actualKey,
       surprise: 1 - probOfActual,
-      winner: hs > as_ ? f.home_team : as_ > hs ? f.away_team : null,
+      winner: actualKey === "HOME_WIN" ? f.home_team : actualKey === "AWAY_WIN" ? f.away_team : null,
       homeXg: p.home_xg, awayXg: p.away_xg,
       homeXgDiff: hs - p.home_xg,
       awayXgDiff: as_ - p.away_xg,

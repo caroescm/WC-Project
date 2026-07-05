@@ -8,6 +8,7 @@ interface Row {
   away: string;
   hs: number;
   as_: number;
+  pens?: string | null;
   h: number;
   d: number;
   a: number;
@@ -209,7 +210,7 @@ export default function ResultsTable({ rows }: { rows: Row[] }) {
               </tr>
             </thead>
             <tbody>
-              {paginated.map(({ matchNumber, home, away, hs, as_, h, d, a, pred, actual, ok, group }) => (
+              {paginated.map(({ matchNumber, home, away, hs, as_, pens, h, d, a, pred, actual, ok, group }) => (
                 <tr key={matchNumber} className="table-row">
                   <td className="table-cell">
                     <span className="badge badge-accent" style={{ whiteSpace: "nowrap" }}>{stageLabel(group)}</span>
@@ -219,6 +220,11 @@ export default function ResultsTable({ rows }: { rows: Row[] }) {
                   </td>
                   <td className="table-cell" style={{ fontSize: "0.8125rem" }}>
                     <span style={{ fontVariantNumeric: "tabular-nums" }}>{hs} – {as_}</span>
+                    {pens && (
+                      <span style={{ marginLeft: 6, fontSize: "0.625rem", color: "var(--text-faint)" }}>
+                        ({pens} pens)
+                      </span>
+                    )}
                   </td>
                   <td className="table-cell" style={{ minWidth: 100 }}>
                     <MiniBar h={h} d={d} a={a} />

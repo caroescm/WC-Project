@@ -25,3 +25,15 @@ export function bestOutcomeKey(p: { HOME_WIN: number; DRAW: number; AWAY_WIN: nu
   if (p.AWAY_WIN >= p.DRAW && p.AWAY_WIN >= p.HOME_WIN) return "AWAY_WIN";
   return "DRAW";
 }
+
+// Returns who actually won, accounting for penalty shootouts. `penalties` is a
+// "H - A" string (only ever set when the 90/120-minute score finished level) —
+// the goal score itself never includes shootout kicks, so a level score with no
+// penalties recorded is a genuine draw.
+export function actualOutcomeKey(hs: number, as_: number, penalties?: string | null): "HOME_WIN" | "AWAY_WIN" | "DRAW" {
+  if (hs === as_ && penalties) {
+    const pens = parseScore(penalties);
+    if (pens && pens[0] !== pens[1]) return pens[0] > pens[1] ? "HOME_WIN" : "AWAY_WIN";
+  }
+  return hs > as_ ? "HOME_WIN" : hs < as_ ? "AWAY_WIN" : "DRAW";
+}
