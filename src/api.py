@@ -69,6 +69,7 @@ def predict(home_team: str, away_team: str, neutral: bool = False):
 @app.get("/fixtures")
 def get_fixtures():
     sync_elos_from_fixtures()
+    reload_data()
     fixtures = pd.read_csv(BASE_DIR / "data/raw/wc2026_fixtures.csv")
     predictions_log = _load_predictions_log()
 
