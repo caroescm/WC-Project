@@ -47,13 +47,30 @@ def _update_rolling_stats(team: str, goals_for: int, goals_against: int,
     pd.concat([stats, new_row], ignore_index=True).to_csv(path, index=False)
 
 
+_ROLLING_COLS = ["attack", "defense", "attack_short", "defense_short", "win_rate", "goal_diff"]
+
+
 def sync_elos_from_fixtures():
-    """Recompute elo_current.csv from elo_base.csv + all results in wc2026_fixtures.csv."""
+    """Recompute elo_current.csv and team_rolling_stats.csv from their base snapshots
+    plus all results in wc2026_fixtures.csv, replayed in chronological (Match Number) order.
+
+    Both files are fully rebuilt on every call so neither can drift from the committed
+    source of truth — mirrors how elo_current.csv already self-heals, but now covers the
+    rolling attack/defense/win_rate/goal_diff features too, instead of relying on whatever
+    register_result() happened to append to disk over time.
+    """
     elo = pd.read_csv(BASE_DIR / "data/processed/elo_base.csv")
+    rolling_base = pd.read_csv(BASE_DIR / "data/processed/team_rolling_stats_base.csv", parse_dates=["date"])
     fixtures = pd.read_csv(BASE_DIR / "data/raw/wc2026_fixtures.csv")
     fixtures = fixtures.sort_values("Match Number")
 
     k = K_FACTORS["WORLD_CUP"]
+
+    # Seed rolling state from each team's most recent base (pre-tournament) row.
+    latest_base = rolling_base.sort_values("date").groupby("team").last()
+    rolling_state = {team: {c: float(latest_base.loc[team, c]) for c in _ROLLING_COLS}
+                      for team in latest_base.index}
+    new_rolling_rows = []
 
     for _, row in fixtures.iterrows():
         if pd.isna(row["Result"]) or str(row["Result"]).strip() == "":
@@ -74,6 +91,34 @@ def sync_elos_from_fixtures():
         home_elo = elo.loc[home_mask, "elo"].values[0]
         away_elo = elo.loc[away_mask, "elo"].values[0]
 
+        # Rolling stats update — weighted by each side's PRE-MATCH opponent Elo,
+        # same as the incremental update in register_result()/_update_rolling_stats().
+        match_date = pd.to_datetime(str(row["Date"]).split()[0], dayfirst=True)
+        for team, gf, ga, opp_elo in (
+            (home_team, home_score, away_score, away_elo),
+            (away_team, away_score, home_score, home_elo),
+        ):
+            prev = rolling_state.get(team)
+            if prev is None:
+                continue  # no prior history — skip, same as _update_rolling_stats()
+
+            opp_weight  = opp_elo / 1500.0
+            weighted_gf = gf * opp_weight
+            weighted_ga = ga * opp_weight
+            win   = 1.0 if gf > ga else (0.5 if gf == ga else 0.0)
+            gdiff = float(gf - ga)
+
+            new_stats = {
+                "attack":        prev["attack"]        * (1 - EWM_ALPHA)       + weighted_gf * EWM_ALPHA,
+                "defense":       prev["defense"]       * (1 - EWM_ALPHA)       + weighted_ga * EWM_ALPHA,
+                "attack_short":  prev["attack_short"]  * (1 - EWM_ALPHA_SHORT) + weighted_gf * EWM_ALPHA_SHORT,
+                "defense_short": prev["defense_short"] * (1 - EWM_ALPHA_SHORT) + weighted_ga * EWM_ALPHA_SHORT,
+                "win_rate":      prev["win_rate"]      * (1 - EWM_ALPHA)       + win   * EWM_ALPHA,
+                "goal_diff":     prev["goal_diff"]     * (1 - EWM_ALPHA)       + gdiff * EWM_ALPHA,
+            }
+            rolling_state[team] = new_stats
+            new_rolling_rows.append({"date": match_date, "team": team, **new_stats})
+
         exp_home = expected_score(home_elo, away_elo)
         exp_away = expected_score(away_elo, home_elo)
 
@@ -91,6 +136,12 @@ def sync_elos_from_fixtures():
         elo.loc[away_mask, "elo"] = update_elo(away_elo, exp_away, actual_away, k, mov)
 
     elo.to_csv(BASE_DIR / "data/processed/elo_current.csv", index=False)
+
+    rolling_full = (
+        pd.concat([rolling_base, pd.DataFrame(new_rolling_rows)], ignore_index=True)
+        if new_rolling_rows else rolling_base
+    )
+    rolling_full.to_csv(BASE_DIR / "data/processed/team_rolling_stats.csv", index=False)
 
 
 def expected_score(rating_a, rating_b):
@@ -147,7 +198,7 @@ def register_result(match_number: int, home_score: int, away_score: int):
     elo_current.to_csv(elo_path, index=False)
 
     # Update rolling attack/defense stats for both teams
-    match_date = str(row["Date"]).split()[0]
+    match_date = pd.to_datetime(str(row["Date"]).split()[0], dayfirst=True).strftime("%Y-%m-%d")
     _update_rolling_stats(home_team, home_score, away_score, away_elo, match_date)
     _update_rolling_stats(away_team, away_score, home_score, home_elo, match_date)
 
