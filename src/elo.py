@@ -122,9 +122,6 @@ def sync_elos_from_fixtures():
         exp_home = expected_score(home_elo, away_elo)
         exp_away = expected_score(away_elo, home_elo)
 
-        goal_diff = abs(home_score - away_score)
-        mov = np.log(goal_diff + 1)
-
         pens = str(row.get("Penalties", "")) if pd.notna(row.get("Penalties")) else ""
         home_pens = away_pens = None
         if "-" in pens:
@@ -133,11 +130,17 @@ def sync_elos_from_fixtures():
             except Exception:
                 pass
 
+        goal_diff = abs(home_score - away_score)
+        # A shootout only happens after a drawn scoreline (goal_diff == 0), which would
+        # otherwise zero out mov and erase the winner's ELO gain — treat it as a 1-goal margin.
+        pens_decide = goal_diff == 0 and home_pens is not None and away_pens is not None and home_pens != away_pens
+        mov = np.log(2) if pens_decide else np.log(goal_diff + 1)
+
         if home_score > away_score:
             actual_home, actual_away = 1.0, 0.0
         elif home_score < away_score:
             actual_home, actual_away = 0.0, 1.0
-        elif home_pens is not None and away_pens is not None and home_pens != away_pens:
+        elif pens_decide:
             actual_home, actual_away = (1.0, 0.0) if home_pens > away_pens else (0.0, 1.0)
         else:
             actual_home, actual_away = 0.5, 0.5
@@ -197,13 +200,16 @@ def register_result(match_number: int, home_score: int, away_score: int,
     exp_away = expected_score(away_elo, home_elo)
 
     goal_diff = abs(home_score - away_score)
-    mov = np.log(goal_diff + 1) if goal_diff > 0 else np.log(1)
+    # A shootout only happens after a drawn scoreline (goal_diff == 0), which would
+    # otherwise zero out mov and erase the winner's ELO gain — treat it as a 1-goal margin.
+    pens_decide = goal_diff == 0 and home_pens is not None and away_pens is not None and home_pens != away_pens
+    mov = np.log(2) if pens_decide else (np.log(goal_diff + 1) if goal_diff > 0 else np.log(1))
 
     if home_score > away_score:
         actual_home, actual_away = 1.0, 0.0
     elif home_score < away_score:
         actual_home, actual_away = 0.0, 1.0
-    elif home_pens is not None and away_pens is not None and home_pens != away_pens:
+    elif pens_decide:
         actual_home, actual_away = (1.0, 0.0) if home_pens > away_pens else (0.0, 1.0)
     else:
         actual_home, actual_away = 0.5, 0.5
