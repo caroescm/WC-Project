@@ -8,7 +8,7 @@ type SimEntry = { r32: number; r16: number; qf: number; sf: number; final: numbe
 type Simulation = Record<string, SimEntry>;
 
 interface Prediction { HOME_WIN: number; DRAW: number; AWAY_WIN: number; home_elo: number; away_elo: number; home_xg?: number; away_xg?: number }
-interface Fixture { match_number: number; date: string; location: string; home_team: string; away_team: string; group: string; result: string | null; prediction: Prediction }
+interface Fixture { match_number: number; date: string; location: string; home_team: string; away_team: string; group: string; result: string | null; penalties: string | null; prediction: Prediction }
 
 const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
 const PAGE_SIZE = 10;
@@ -482,6 +482,33 @@ const R32_MATCHES = [
   { matchNum: 88, date: "Jul 3",  home: "2nd D",   away: "2nd G"         },
 ];
 
+const R16_MATCHES = [
+  { matchNum: 89, date: "Jul 4", home: "TBD", away: "TBD" },
+  { matchNum: 90, date: "Jul 4", home: "TBD", away: "TBD" },
+  { matchNum: 91, date: "Jul 5", home: "TBD", away: "TBD" },
+  { matchNum: 92, date: "Jul 6", home: "TBD", away: "TBD" },
+  { matchNum: 93, date: "Jul 6", home: "TBD", away: "TBD" },
+  { matchNum: 94, date: "Jul 7", home: "TBD", away: "TBD" },
+  { matchNum: 95, date: "Jul 7", home: "TBD", away: "TBD" },
+  { matchNum: 96, date: "Jul 7", home: "TBD", away: "TBD" },
+];
+
+const QF_MATCHES = [
+  { matchNum: 97,  date: "Jul 9",  home: "TBD", away: "TBD" },
+  { matchNum: 98,  date: "Jul 10", home: "TBD", away: "TBD" },
+  { matchNum: 99,  date: "Jul 11", home: "TBD", away: "TBD" },
+  { matchNum: 100, date: "Jul 12", home: "TBD", away: "TBD" },
+];
+
+const SF_MATCHES = [
+  { matchNum: 101, date: "Jul 14", home: "TBD", away: "TBD" },
+  { matchNum: 102, date: "Jul 15", home: "TBD", away: "TBD" },
+];
+
+const FINAL_MATCHES = [
+  { matchNum: 104, date: "Jul 19", home: "TBD", away: "TBD" },
+];
+
 type BracketRound = "r32" | "r16" | "qf" | "sf" | "final";
 
 const BRACKET_ROUNDS: { key: BracketRound; label: string; short: string; dates: string; slots: number; simKey: keyof SimEntry; cols: number }[] = [
@@ -524,8 +551,10 @@ function BracketTab({ simulation, fixtures }: { simulation: Simulation; fixtures
   const round = BRACKET_ROUNDS.find(r => r.key === activeRound)!;
   const roundIndex = BRACKET_ROUNDS.findIndex(r => r.key === activeRound);
 
-  // ── Match card (R32 — known slot codes) ──
-  const KnownMatchCard = ({ matchNum, date, home, away, result }: { matchNum: number; date: string; home: string; away: string; result?: string | null }) => (
+  // ── Match card (known matchups — real teams once drawn/played) ──
+  const KnownMatchCard = ({ matchNum, date, home, away, result, penalties }: { matchNum: number; date: string; home: string; away: string; result?: string | null; penalties?: string | null }) => {
+    const scoreLabel = result ? (penalties ? `${result.replace(/\s/g, "")} (${penalties.replace(/\s/g, "")}p)` : result) : "VS";
+    return (
     <div style={{
       background: "var(--card-bg)",
       border: "1px solid var(--border)",
@@ -553,45 +582,15 @@ function BracketTab({ simulation, fixtures }: { simulation: Simulation; fixtures
           color: result ? "var(--accent)" : "var(--text-faint)",
           border: "1px solid var(--border)", padding: "2px 5px", flexShrink: 0,
           letterSpacing: "0.04em", whiteSpace: "nowrap",
-        }}>{result ? result : "VS"}</span>
+        }}>{scoreLabel}</span>
         <span style={{
           fontSize: "0.8125rem", fontWeight: 700, color: "var(--foreground)",
           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
         }}>{away}</span>
       </div>
     </div>
-  );
-
-  // ── TBD card (R16 onward) ──
-  const TBDCard = ({ i }: { i: number }) => (
-    <div style={{
-      background: "var(--card-bg-alt)",
-      border: "1px dashed var(--border)",
-      padding: "12px 14px",
-      display: "flex",
-      flexDirection: "column",
-      gap: 10,
-      opacity: 0.7,
-      minWidth: 0,
-    }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{
-          fontSize: "0.5625rem", fontWeight: 700, letterSpacing: "0.06em",
-          background: "var(--toggle-track)", color: "var(--text-faint)",
-          padding: "2px 6px",
-        }}>#{i + 1}</span>
-        <span style={{ fontSize: "0.5625rem", color: "var(--text-faint)" }}>{round.dates}</span>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-muted)", textAlign: "right" }}>TBD</span>
-        <span style={{
-          fontSize: "0.5625rem", fontWeight: 800, color: "var(--text-faint)",
-          border: "1px dashed var(--border)", padding: "2px 5px", flexShrink: 0,
-        }}>VS</span>
-        <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-muted)" }}>TBD</span>
-      </div>
-    </div>
-  );
+    );
+  };
 
   // ── Favorites grid ──
   const FavoritesGrid = ({ simKey, n }: { simKey: keyof SimEntry; n: number }) => {
@@ -707,22 +706,25 @@ function BracketTab({ simulation, fixtures }: { simulation: Simulation; fixtures
         gap: 6,
         ...(activeRound === "final" ? { maxWidth: 320 } : {}),
       }}>
-        {activeRound === "r32"
-          ? R32_MATCHES.map(m => {
-              const f = fixtureByNum[m.matchNum];
-              return (
-                <KnownMatchCard
-                  key={m.matchNum}
-                  matchNum={m.matchNum}
-                  date={f?.date ?? m.date}
-                  home={f?.home_team ?? m.home}
-                  away={f?.away_team ?? m.away}
-                  result={f?.result}
-                />
-              );
-            })
-          : Array.from({ length: round.slots }, (_, i) => <TBDCard key={i} i={i} />)
-        }
+        {(activeRound === "r32" ? R32_MATCHES
+          : activeRound === "r16" ? R16_MATCHES
+          : activeRound === "qf"  ? QF_MATCHES
+          : activeRound === "sf"  ? SF_MATCHES
+          : FINAL_MATCHES
+        ).map(m => {
+          const f = fixtureByNum[m.matchNum];
+          return (
+            <KnownMatchCard
+              key={m.matchNum}
+              matchNum={m.matchNum}
+              date={f?.date ?? m.date}
+              home={f?.home_team ?? m.home}
+              away={f?.away_team ?? m.away}
+              result={f?.result}
+              penalties={f?.penalties}
+            />
+          );
+        })}
       </div>
 
       {/* ── Simulation favorites ── */}

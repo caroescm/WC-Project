@@ -4,7 +4,7 @@ type SimEntry = { r32: number; r16: number; qf: number; sf: number; final: numbe
 type Simulation = Record<string, SimEntry>;
 
 interface Prediction { HOME_WIN: number; DRAW: number; AWAY_WIN: number; home_elo: number; away_elo: number; home_xg?: number; away_xg?: number }
-interface Fixture { match_number: number; date: string; location: string; home_team: string; away_team: string; group: string; result: string | null; prediction: Prediction }
+interface Fixture { match_number: number; date: string; location: string; home_team: string; away_team: string; group: string; result: string | null; penalties: string | null; prediction: Prediction }
 
 const BASE = process.env.API_URL ?? "https://wc-project-production.up.railway.app";
 
