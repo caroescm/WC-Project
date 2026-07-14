@@ -1,0 +1,11 @@
+frontend/
+notebooks/
+prev/
+.git/
+.serena/
+.claude/
+*.md
+__pycache__/
+*.pyc
+.venv/
+venv/
