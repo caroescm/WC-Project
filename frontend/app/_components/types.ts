@@ -20,4 +20,4 @@ export interface Fixture {
   prediction: Prediction;
 }
 
-export const BASE = process.env.API_URL ?? "https://wc-project-production.up.railway.app";
+export const BASE = process.env.API_URL ?? "https://wc-forecast-backend-286287731961.us-central1.run.app";
