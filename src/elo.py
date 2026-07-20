@@ -49,19 +49,32 @@ def _update_rolling_stats(team: str, goals_for: int, goals_against: int,
 
 _ROLLING_COLS = ["attack", "defense", "attack_short", "defense_short", "win_rate", "goal_diff"]
 
+_last_synced_mtime = None
 
-def sync_elos_from_fixtures():
+
+def sync_elos_from_fixtures(force: bool = False):
     """Recompute elo_current.csv and team_rolling_stats.csv from their base snapshots
     plus all results in wc2026_fixtures.csv, replayed in chronological (Match Number) order.
 
-    Both files are fully rebuilt on every call so neither can drift from the committed
-    source of truth — mirrors how elo_current.csv already self-heals, but now covers the
-    rolling attack/defense/win_rate/goal_diff features too, instead of relying on whatever
+    Both files are fully rebuilt so neither can drift from the committed source of truth —
+    mirrors how elo_current.csv already self-heals, but now covers the rolling
+    attack/defense/win_rate/goal_diff features too, instead of relying on whatever
     register_result() happened to append to disk over time.
+
+    The replay is O(all matches played) plus two CSV rewrites, so it's skipped whenever
+    wc2026_fixtures.csv hasn't changed since the last call (checked via mtime) — otherwise
+    every /fixtures request would redo the full-tournament replay from scratch.
     """
+    global _last_synced_mtime
+    fixtures_path = BASE_DIR / "data/raw/wc2026_fixtures.csv"
+    mtime = fixtures_path.stat().st_mtime
+    if not force and mtime == _last_synced_mtime:
+        return
+    _last_synced_mtime = mtime
+
     elo = pd.read_csv(BASE_DIR / "data/processed/elo_base.csv")
     rolling_base = pd.read_csv(BASE_DIR / "data/processed/team_rolling_stats_base.csv", parse_dates=["date"])
-    fixtures = pd.read_csv(BASE_DIR / "data/raw/wc2026_fixtures.csv")
+    fixtures = pd.read_csv(fixtures_path)
     fixtures = fixtures.sort_values("Match Number")
 
     k = K_FACTORS["WORLD_CUP"]

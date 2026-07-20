@@ -58,6 +58,10 @@ def _h2h_rate(home: str, away: str) -> float:
 
 
 def reload_data():
+    """Refresh Elo/rolling-stats globals after a new result. Doesn't touch H2H —
+    that's built from matches_clean.csv, which only holds pre-tournament history
+    and never changes at runtime, so re-parsing its 49k rows on every call would
+    be pure overhead (see _build_h2h, called once at import time)."""
     global elo_current, rolling, _latest_stats, _team_feat_index
     elo_current   = pd.read_csv(BASE_DIR / 'data/processed/elo_current.csv')
     rolling       = pd.read_csv(BASE_DIR / 'data/processed/team_rolling_stats.csv', parse_dates=['date'])
@@ -69,7 +73,6 @@ def reload_data():
                [_ROLLING_COLS]
     )
     _team_feat_index = team_features.set_index('team')
-    _build_h2h()
 
 
 _FALLBACKS = {
