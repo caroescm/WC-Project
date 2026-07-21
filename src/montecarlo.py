@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import threading
 from pathlib import Path
 from .config import name_map
 from .predict import predicting
@@ -215,16 +216,27 @@ def simulate_tournament(n: int = 10000) -> dict:
 
 
 _cache = None
+_cache_lock = threading.Lock()
 
 
 def get_cached_simulation():
+    """FastAPI runs this sync endpoint in a threadpool, so concurrent requests
+    (e.g. the homepage and predictions page both hitting /simulate on load) used
+    to each see _cache as None and independently kick off their own 3000-iteration
+    simulation — all fighting over the same CPU, none finishing before Cloud Run's
+    300s timeout. The lock makes every request but the first block on the same
+    in-flight computation instead of starting a redundant one."""
     global _cache
-    if _cache is None:
-        _cache = simulate_tournament(n=3000)
+    if _cache is not None:
+        return _cache
+    with _cache_lock:
+        if _cache is None:
+            _cache = simulate_tournament(n=3000)
     return _cache
 
 
 def invalidate_cache():
     global _cache
-    _cache = None
+    with _cache_lock:
+        _cache = None
     _pred_cache.clear()

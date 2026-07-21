@@ -128,8 +128,8 @@ def predicting(home_team: str, away_team: str, neutral: bool = True, knockout: b
     feat_normal  = make_features(hs, as_, elo_diff,  elo_diff_sq,  h2h)
     feat_flipped = make_features(as_, hs, -elo_diff, -elo_diff_sq, 1.0 - h2h)
 
-    feat_n_sc = scaler.transform(feat_normal.values)
-    feat_f_sc = scaler.transform(feat_flipped.values)
+    feat_n_sc = scaler.transform(feat_normal)
+    feat_f_sc = scaler.transform(feat_flipped)
 
     if neutral:
         lambda_home = (float(model_home.predict(feat_n_sc)[0]) + float(model_away.predict(feat_f_sc)[0])) / 2
