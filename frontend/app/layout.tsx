@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import Sidebar from "./sidebar";
 import SplashScreen from "./_components/SplashScreen";
 import "./globals.css";
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main style={{ flex: 1, padding: "80px 28px 8px", maxWidth: 1296, margin: "0 auto", width: "100%" }}>
           {children}
         </main>
+        <Analytics />
       </body>
     </html>
   );
